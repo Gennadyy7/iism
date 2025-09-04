@@ -1,0 +1,31 @@
+[project]
+name = "iism"
+version = "0.1.0"
+description = ""
+authors = [
+    {name = "Henadzi Khviasko",email = "henadzi.khviasko@pynest.io"}
+]
+requires-python = ">=3.12,<4"
+dependencies = [
+    "django (>=5.1.6,<6.0.0)",
+    "django-environ (>=0.12.0,<0.13.0)",
+    "gunicorn (>=23.0.0,<24.0.0)",
+    "psycopg2-binary (>=2.9.10,<3.0.0)",
+]
+
+
+[build-system]
+requires = ["poetry-core>=2.0.0,<3.0.0"]
+build-backend = "poetry.core.masonry.api"
+
+[tool.poetry]
+package-mode = false
+
+[tool.poetry.group.dev.dependencies]
+isort = "^6.0.1"
+
+[tool.isort]
+profile = "black"
+line_length = 88
+multi_line_output = 1
+include_trailing_comma = true
