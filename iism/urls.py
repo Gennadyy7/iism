@@ -19,9 +19,12 @@ from django.conf.urls.static import static
 from django.contrib import admin
 from django.urls import include, path
 
+from iism.views import IndexView
+
 urlpatterns = [
     path("admin/", admin.site.urls),
-    path("lab1/", include("lab1.urls")),
+    path("", IndexView.as_view(), name="index"),
+    path("", include("lab1.urls")),
 ]
 
 if settings.DEBUG:

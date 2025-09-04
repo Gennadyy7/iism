@@ -49,6 +49,7 @@ coverage.xml
 # Django stuff
 db.sqlite3
 db.sqlite3-journal
+staticfiles/
 
 # PyBuilder
 target/
