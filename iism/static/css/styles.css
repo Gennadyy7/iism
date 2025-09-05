@@ -129,6 +129,22 @@ p {
 /* ==================== */
 /* COMPONENTS */
 /* ==================== */
+/* Lab Error - Universal error display */
+.lab-error {
+    color: var(--error);
+    padding: 1.5rem;
+    background-color: rgba(244, 67, 54, 0.1);
+    border-radius: 8px;
+    margin-bottom: 2rem;
+    border: 1px solid rgba(244, 67, 54, 0.3);
+    border-left: 4px solid var(--error);
+}
+
+.lab-error strong {
+    color: var(--error);
+    font-size: 1.1em;
+}
+
 /* Lab List (Index page) */
 .lab-list {
     margin-top: 2rem;

@@ -5,69 +5,75 @@
 {% block title %}Lab 1{% endblock %}
 
 {% block content %}
-    <h1>Lab 1: Random Events and Their Simulation</h1>
+    {% if lab_error %}
+        <div class="lab-error">
+            <strong>Error!</strong> {{ lab_error }}
+        </div>
+    {% else %}
+        <h1>Lab 1: Random Events and Their Simulation</h1>
 
-    <!-- Task 1 -->
-    <div class="lab-task">
-        <h2>Task 1: Simple Event Simulation</h2>
-        <form method="post" class="lab-form">
-            {% csrf_token %}
-            <div class="lab-form-group">
-                {{ task1_form.probability.label_tag }}
-                {{ task1_form.probability }}
-                {% if task1_form.probability.help_text %}
-                    <span class="help-text">{{ task1_form.probability.help_text }}</span>
-                {% endif %}
-            </div>
-            <button type="submit" name="task1">Run Simulation</button>
-        </form>
+        <!-- Task 1 -->
+        <div class="lab-task">
+            <h2>Task 1: Simple Event Simulation</h2>
+            <form method="post" class="lab-form">
+                {% csrf_token %}
+                <div class="lab-form-group">
+                    {{ task1_form.probability.label_tag }}
+                    {{ task1_form.probability }}
+                    {% if task1_form.probability.help_text %}
+                        <span class="help-text">{{ task1_form.probability.help_text }}</span>
+                    {% endif %}
+                </div>
+                <button type="submit" name="task1">Run Simulation</button>
+            </form>
 
-        {% if task1_result %}
-            <div class="result">
-                <h3>Results:</h3>
-                <p><strong>Frequency:</strong> {{ task1_result.frequency }}</p>
-                <p><strong>Theoretical:</strong> {{ task1_result.theory }}</p>
-            </div>
-        {% endif %}
-    </div>
+            {% if task1_result %}
+                <div class="result">
+                    <h3>Results:</h3>
+                    <p><strong>Frequency:</strong> {{ task1_result.frequency }}</p>
+                    <p><strong>Theoretical:</strong> {{ task1_result.theory }}</p>
+                </div>
+            {% endif %}
+        </div>
 
-    <!-- Task 2 -->
-    <div class="lab-task">
-        <h2>Task 2: Independent Events Simulation</h2>
-        <form method="post" class="lab-form">
-            {% csrf_token %}
-            <div class="lab-form-group">
-                {{ task2_form.probabilities.label_tag }}
-                {{ task2_form.probabilities }}
-                {% if task2_form.probabilities.help_text %}
-                    <span class="help-text">{{ task2_form.probabilities.help_text }}</span>
-                {% endif %}
-            </div>
-            <button type="submit" name="task2">Run Simulation</button>
-        </form>
+        <!-- Task 2 -->
+        <div class="lab-task">
+            <h2>Task 2: Independent Events Simulation</h2>
+            <form method="post" class="lab-form">
+                {% csrf_token %}
+                <div class="lab-form-group">
+                    {{ task2_form.probabilities.label_tag }}
+                    {{ task2_form.probabilities }}
+                    {% if task2_form.probabilities.help_text %}
+                        <span class="help-text">{{ task2_form.probabilities.help_text }}</span>
+                    {% endif %}
+                </div>
+                <button type="submit" name="task2">Run Simulation</button>
+            </form>
 
-        {% if task2_result %}
-            <div class="result">
-                <h3>Results:</h3>
-                <table>
-                    <thead>
-                        <tr>
-                            <th>Event</th>
-                            <th>Frequency</th>
-                            <th>Theoretical</th>
-                        </tr>
-                    </thead>
-                    <tbody>
-                        {% for row in task2_result %}
+            {% if task2_result %}
+                <div class="result">
+                    <h3>Results:</h3>
+                    <table>
+                        <thead>
                             <tr>
-                                <td>{{ row.event }}</td>
-                                <td>{{ row.frequency }}</td>
-                                <td>{{ row.theory }}</td>
+                                <th>Event</th>
+                                <th>Frequency</th>
+                                <th>Theoretical</th>
                             </tr>
-                        {% endfor %}
-                    </tbody>
-                </table>
-            </div>
-        {% endif %}
-    </div>
+                        </thead>
+                        <tbody>
+                            {% for row in task2_result %}
+                                <tr>
+                                    <td>{{ row.event }}</td>
+                                    <td>{{ row.frequency }}</td>
+                                    <td>{{ row.theory }}</td>
+                                </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+            {% endif %}
+        </div>
+    {% endif %}
 {% endblock %}
