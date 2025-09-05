@@ -1,7 +1,8 @@
 import logging
-from functools import wraps
-from django.shortcuts import render
 import re
+from functools import wraps
+
+from django.shortcuts import render
 
 
 def handle_lab_exceptions(func):

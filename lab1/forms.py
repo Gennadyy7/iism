@@ -1,5 +1,7 @@
 from django import forms
 
+from lab1.models import Team
+
 
 class Task1Form(forms.Form):
     probability = forms.FloatField(
@@ -39,3 +41,16 @@ class Task4Form(forms.Form):
         help_text="e.g., 0.2, 0.3, 0.5",
         initial="0.2, 0.3, 0.5"
     )
+
+
+class TeamForm(forms.ModelForm):
+    class Meta:
+        model = Team
+        fields = ['name', 'rating']
+        widgets = {
+            'rating': forms.NumberInput(attrs={'min': 0, 'max': 100}),
+        }
+
+
+class TournamentRunForm(forms.Form):
+    pass

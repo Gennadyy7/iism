@@ -156,5 +156,100 @@
                 </div>
             {% endif %}
         </div>
+
+        <!-- Additional task -->
+        <div class="lab-task">
+            <h2>Additional task: Soccer Cup Simulator ⚽</h2>
+
+            <h3>Team Management</h3>
+            <form method="post" class="lab-form">
+                {% csrf_token %}
+                <div class="lab-form-group">
+                    {{ team_form.name.label_tag }}
+                    {{ team_form.name }}
+                    {% if team_form.name.errors %}
+                        <div class="text-muted">
+                            {% for error in team_form.name.errors %}
+                                <p>{{ error }}</p>
+                            {% endfor %}
+                        </div>
+                    {% endif %}
+                </div>
+                <div class="lab-form-group">
+                    {{ team_form.rating.label_tag }}
+                    {{ team_form.rating }}
+                    {% if team_form.rating.help_text %}
+                        <span class="help-text">{{ team_form.rating.help_text }}</span>
+                    {% endif %}
+                </div>
+                <button type="submit" name="add_team">Add a team</button>
+            </form>
+        </div>
+
+        {% if teams %}
+            <h3>List of teams ({{ teams.count }})</h3>
+            <ul>
+                {% for team in teams %}
+                    <li>
+                        <form method="post" style="display: inline-block;  margin-right: 10px;">
+                            {% csrf_token %}
+                            <input type="hidden" name="team_id" value="{{ team.id }}">
+                            <button type="submit" name="delete_team"
+                            >Remove</button>
+                        </form>
+                        <p style="display: inline-block;">
+                            {{ team.name }} (Rating: {{ team.rating }})
+                        </p>
+                    </li>
+                {% endfor %}
+            </ul>
+        {% else %}
+            <p class="text-muted">The teams have not been added yet.</p>
+        {% endif %}
+
+        <form method="post" class="lab-form">
+            {% csrf_token %}
+            <button type="submit" name="run_tournament">Launch the tournament</button>
+        </form>
+
+        {% if tournament_result %}
+            <div class="result">
+                <h3>Tournament results</h3>
+                <p><strong>Total teams:</strong> {{ tournament_result.total_teams }}</p>
+                <p><strong>Total stages:</strong> {{ tournament_result.total_stages }}</p>
+                <p><strong>Winner:</strong> <span style="color: var(--accent);">{{ tournament_result.winner.name }}</span>
+                    (Rating: {{ tournament_result.winner.rating }})</p>
+
+                <h4>The course of the tournament:</h4>
+                {% for stage in tournament_result.stages_history %}
+                    <div style="margin-bottom: 1rem; padding: 0.5rem; border-left: 2px solid var(--border);">
+                        <h5>{{ stage.description }}</h5>
+                        {% if stage.matches %}
+                            <ul>
+                                {% for match in stage.matches %}
+                                    <li>
+                                        <span style="color: {% if match.winner == match.team1 %}var(--accent){% else %}var(--text-secondary){% endif %};">
+                                            {{ match.team1.name }}
+                                        </span>
+                                        vs
+                                        <span style="color: {% if match.winner == match.team2 %}var(--accent){% else %}var(--text-secondary){% endif %};">
+                                            {{ match.team2.name }}
+                                        </span>
+                                        &rarr;
+                                        <strong>{{ match.winner.name }} wins!</strong>
+                                    </li>
+                                {% endfor %}
+                            </ul>
+                        {% else %}
+                            <ul>
+                                {% for winner_info in stage.winners %}
+                                    <li>{{ winner_info.team.name }} (Rating: {{ winner_info.team.rating }})</li>
+                                {% endfor %}
+                            </ul>
+                        {% endif %}
+                    </div>
+                {% endfor %}
+            </div>
+        {% endif %}
     {% endif %}
 {% endblock %}
