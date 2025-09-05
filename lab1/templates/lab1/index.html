@@ -75,5 +75,86 @@
                 </div>
             {% endif %}
         </div>
+
+        <!-- Task 3 -->
+        <div class="lab-task">
+            <h2>Task 3: Dependent Events Simulation</h2>
+            <form method="post" class="lab-form">
+                {% csrf_token %}
+                <div class="lab-form-group">
+                    {{ task3_form.p_a.label_tag }}
+                    {{ task3_form.p_a }}
+                </div>
+                <div class="lab-form-group">
+                    {{ task3_form.p_b_given_a.label_tag }}
+                    {{ task3_form.p_b_given_a }}
+                </div>
+                <button type="submit" name="task3">Run Simulation</button>
+            </form>
+
+            {% if task3_result %}
+                <div class="result">
+                    <h3>Results:</h3>
+                    <table>
+                        <thead>
+                            <tr>
+                                <th>Outcome</th>
+                                <th>Frequency</th>
+                                <th>Theoretical</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for row in task3_result %}
+                                <tr>
+                                    <td>{{ row.outcome }}</td>
+                                    <td>{{ row.frequency }}</td>
+                                    <td>{{ row.theory }}</td>
+                                </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+            {% endif %}
+        </div>
+
+        <!-- Task 4 -->
+        <div class="lab-task">
+            <h2>Task 4: Complete Group Simulation</h2>
+            <form method="post" class="lab-form">
+                {% csrf_token %}
+                <div class="lab-form-group">
+                    {{ task4_form.probabilities.label_tag }}
+                    {{ task4_form.probabilities }}
+                    {% if task4_form.probabilities.help_text %}
+                        <span class="help-text">{{ task4_form.probabilities.help_text }}</span>
+                    {% endif %}
+                </div>
+                <button type="submit" name="task4">Run Simulation</button>
+            </form>
+
+            {% if task4_result %}
+                <div class="result">
+                    <h3>Results:</h3>
+                    <table>
+                        <thead>
+                            <tr>
+                                <th>Outcome</th>
+                                <th>Frequency</th>
+                                <th>Theoretical</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for row in task4_result %}
+                                <tr>
+                                    <td>{{ row.outcome }}</td>
+                                    <td>{{ row.frequency }}</td>
+                                    <td>{{ row.theory }}</td>
+                                </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+            {% endif %}
+        </div>
     {% endif %}
 {% endblock %}

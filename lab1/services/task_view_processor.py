@@ -26,3 +26,33 @@ class TaskViewProcessor:
                 'theory': theories_rounded[i]
             })
         return task2_table_data
+
+    @staticmethod
+    def process_task3(p_a, p_b_given_a):
+        manager = AssignmentManager()
+        freqs, theories = manager.run_task3(p_a, p_b_given_a)
+
+        task3_table_data = []
+        outcomes = ['A∩B', 'A∩¬B', '¬A∩B', '¬A∩¬B']
+        for i in range(4):
+            task3_table_data.append({
+                'outcome': outcomes[i],
+                'frequency': round(freqs.get(i, 0), 4),
+                'theory': round(theories.get(i, 0), 4)
+            })
+        return task3_table_data
+
+    @staticmethod
+    def process_task4(probabilities):
+        manager = AssignmentManager()
+        freqs, theories = manager.run_task4(probabilities)
+
+        task4_table_data = []
+        for i in range(len(probabilities)):
+            task4_table_data.append({
+                'outcome': i + 1,
+                'frequency': round(freqs.get(i, 0), 4),
+                'theory': round(theories.get(i, 0), 4)
+            })
+
+        return task4_table_data

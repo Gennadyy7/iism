@@ -40,4 +40,24 @@ class Lab1View(TemplateView):
                 context['task2_form'] = form
                 return render(request, self.template_name, context)
 
+        elif 'task3' in request.POST:
+            form = Task3Form(request.POST)
+            if form.is_valid():
+                p_a = form.cleaned_data['p_a']
+                p_b_given_a = form.cleaned_data['p_b_given_a']
+                context['task3_result'] = TaskViewProcessor.process_task3(p_a, p_b_given_a)
+            else:
+                context['task3_form'] = form
+                return render(request, self.template_name, context)
+
+        elif 'task4' in request.POST:
+            form = Task4Form(request.POST)
+            if form.is_valid():
+                probs_str = form.cleaned_data['probabilities']
+                probs = [float(x.strip()) for x in probs_str.split(',')]
+                context['task4_result'] = TaskViewProcessor.process_task4(probs)
+            else:
+                context['task4_form'] = form
+                return render(request, self.template_name, context)
+
         return render(request, self.template_name, context)
