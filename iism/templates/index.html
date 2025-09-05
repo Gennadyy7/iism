@@ -5,7 +5,7 @@
 {% block title %}IISM Catalog{% endblock %}
 
 {% block content %}
-    <h1>Catalog of laboratory work</h1>
+    <h1>Catalog of laboratory works</h1>
 
     {% if lab_apps %}
         <div class="lab-list">
@@ -16,6 +16,6 @@
             {% endfor %}
         </div>
     {% else %}
-        <p class="text-muted">Пока нет доступных лабораторных работ.</p>
+        <p class="text-muted">No lab work available yet.</p>
     {% endif %}
 {% endblock %}
