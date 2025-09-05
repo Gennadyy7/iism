@@ -33,4 +33,26 @@ class Lab1View(TemplateView):
                 context['task1_form'] = form
                 return render(request, self.template_name, context)
 
+        elif 'task2' in request.POST:
+            form = Task2Form(request.POST)
+            if form.is_valid():
+                probs_str = form.cleaned_data['probabilities']
+                probs = [float(x.strip()) for x in probs_str.split(',')]
+                manager = AssignmentManager()
+                freqs, theories = manager.run_task2(probs)
+
+                task2_table_data = []
+                freqs_rounded = [round(f, 4) for f in freqs]
+                theories_rounded = [round(t, 4) for t in theories]
+                for i in range(len(freqs_rounded)):
+                    task2_table_data.append({
+                        'event': i + 1,
+                        'frequency': freqs_rounded[i],
+                        'theory': theories_rounded[i]
+                    })
+                context['task2_result'] = task2_table_data
+            else:
+                context['task2_form'] = form
+                return render(request, self.template_name, context)
+
         return render(request, self.template_name, context)
