@@ -8,6 +8,12 @@
     <link type="text/css" href="{% static 'css/styles.css' %}" rel="stylesheet"/>
 </head>
 <body>
+    <header class="header">
+        <div class="header-content">
+            <a href="{% url 'index' %}" class="header-title">IISM</a>
+        </div>
+    </header>
+
     <main>
         {% block content %}{% endblock %}
     </main>

@@ -24,7 +24,7 @@ from iism.views import IndexView
 urlpatterns = [
     path("admin/", admin.site.urls),
     path("", IndexView.as_view(), name="index"),
-    path("", include("lab1.urls")),
+    path("lab1/", include("lab1.urls")),
 ]
 
 if settings.DEBUG:

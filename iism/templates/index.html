@@ -2,10 +2,20 @@
 
 {% load static %}
 
-{% block title %}Lab Catalog{% endblock %}
+{% block title %}IISM Catalog{% endblock %}
 
 {% block content %}
-    <div>
-        Привет, Мир!!!
-    </div>
+    <h1>Catalog of laboratory work</h1>
+
+    {% if lab_apps %}
+        <div class="lab-list">
+            {% for lab in lab_apps %}
+                <a href="{{ lab.url }}" class="lab-link">
+                    <h3>{{ lab.display_name }}</h3>
+                </a>
+            {% endfor %}
+        </div>
+    {% else %}
+        <p>Пока нет доступных лабораторных работ.</p>
+    {% endif %}
 {% endblock %}
