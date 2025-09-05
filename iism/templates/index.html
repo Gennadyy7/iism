@@ -11,11 +11,11 @@
         <div class="lab-list">
             {% for lab in lab_apps %}
                 <a href="{{ lab.url }}" class="lab-link">
-                    <h3>{{ lab.display_name }}</h3>
+                    {{ lab.display_name }}
                 </a>
             {% endfor %}
         </div>
     {% else %}
-        <p>Пока нет доступных лабораторных работ.</p>
+        <p class="text-muted">Пока нет доступных лабораторных работ.</p>
     {% endif %}
 {% endblock %}

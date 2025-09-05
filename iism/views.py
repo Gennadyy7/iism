@@ -14,7 +14,6 @@ class IndexView(TemplateView):
         Each lab app must have 'index' named URL pattern.
         """
         lab_apps = []
-        print(f'{settings.INSTALLED_APPS=}')
         for app_name in settings.INSTALLED_APPS:
             if app_name.startswith('lab'):
                 try:
@@ -22,7 +21,6 @@ class IndexView(TemplateView):
                     display_name = f"Lab {lab_number}"
                 except ValueError:
                     display_name = app_name
-                print(f'{display_name=}')
                 try:
                     url = reverse(f"{app_name}:index")
                     lab_apps.append({
@@ -30,10 +28,8 @@ class IndexView(TemplateView):
                         'display_name': display_name,
                         'url': url
                     })
-                except NoReverseMatch as e:
-                    print(f'{e=}')
+                except NoReverseMatch:
                     continue
-        print(f'{lab_apps=}')
         return sorted(lab_apps, key=lambda x: x['name'])
 
     def get_context_data(self, **kwargs):

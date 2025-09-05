@@ -1,0 +1,32 @@
+{% extends 'layout.html' %}
+
+{% load static %}
+
+{% block title %}Lab 1{% endblock %}
+
+{% block content %}
+    <h1>Lab 1: Random Events and Their Simulation</h1>
+
+    <div class="lab-task">
+        <h2>Task 1: Simple Event Simulation</h2>
+        <form method="post" class="lab-form">
+            {% csrf_token %}
+            <div class="lab-form-group">
+                {{ task1_form.probability.label_tag }}
+                {{ task1_form.probability }}
+                {% if task1_form.probability.help_text %}
+                    <span class="help-text">{{ task1_form.probability.help_text }}</span>
+                {% endif %}
+            </div>
+            <button type="submit" name="task1">Run Simulation</button>
+        </form>
+
+        {% if task1_result %}
+            <div class="result">
+                <h3>Results:</h3>
+                <p><strong>Frequency:</strong> {{ task1_result.frequency }}</p>
+                <p><strong>Theoretical:</strong> {{ task1_result.theory }}</p>
+            </div>
+        {% endif %}
+    </div>
+{% endblock %}
