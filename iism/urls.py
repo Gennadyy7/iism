@@ -25,6 +25,7 @@ urlpatterns = [
     path("admin/", admin.site.urls),
     path("", IndexView.as_view(), name="index"),
     path("lab1/", include("lab1.urls")),
+    path("lab2/", include("lab2.urls")),
 ]
 
 if settings.DEBUG:
