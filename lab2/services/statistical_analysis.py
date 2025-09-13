@@ -88,13 +88,17 @@ class StatisticalAnalysisService:
     @staticmethod
     def test_distribution_fit(
             sample: list[float | int],
-            expected_dist: rv_frozen,
+            expected_dist: rv_frozen | dict,
             is_continuous: bool = True,
             alpha: float = 0.05
     ) -> dict:
         sample_array = np.array(sample)
 
         if is_continuous:
+            if not isinstance(expected_dist, rv_frozen):
+                raise ValueError("For a continuous test, expected_dist should be a "
+                                 "continuous distribution object of scipy.stats.")
+
             ks_statistic, p_value = stats.kstest(sample_array, expected_dist.cdf)
             return {
                 'test_name': 'Kolmogorov-Smirnov',
@@ -106,6 +110,9 @@ class StatisticalAnalysisService:
                                   f"the null hypothesis at significance level {alpha}."
             }
         else:
+            if not isinstance(expected_dist, dict):
+                raise ValueError("For a discrete test, expected_dist should be a dictionary {value: probability}.")
+
             unique_vals, counts = np.unique(sample_array, return_counts=True)
             observed_freq = dict(zip(unique_vals, counts))
 
@@ -113,9 +120,7 @@ class StatisticalAnalysisService:
             observed_freq_list = []
 
             for val in unique_vals:
-                if not hasattr(expected_dist, 'pmf'):
-                    raise ValueError("Incorrect distribution type for the discrete test.")
-                exp_prob = expected_dist.pmf(val)
+                exp_prob = expected_dist.get(val, 0)
                 expected_freq_list.append(exp_prob * len(sample_array))
                 observed_freq_list.append(observed_freq.get(val, 0))
 

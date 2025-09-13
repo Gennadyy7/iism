@@ -11,9 +11,7 @@ class ContinuousVariableSimulator(BaseSimulator):
         norm=stats.norm,
         expon=stats.expon,
         gamma=stats.gamma,
-        lognorm=stats.lognorm,
         uniform=stats.uniform,
-        beta=stats.beta
     )
 
     @classmethod

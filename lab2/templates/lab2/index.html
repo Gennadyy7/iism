@@ -1,0 +1,206 @@
+{% extends 'layout.html' %}
+
+{% load static %}
+
+{% block title %}Lab 2{% endblock %}
+
+{% block content %}
+    {% if lab_error %}
+        <div class="lab-error">
+            <strong>Error!</strong> {{ lab_error }}
+        </div>
+    {% else %}
+        <h1>Lab 2: Simulation Of Random Variables</h1>
+
+        <!-- Task 1 -->
+        <div class="lab-task">
+            <h2>Task 1: Simulation Of Continuous Random Variables (Inverse Function Method)</h2>
+            <form method="post" class="lab-form">
+                {% csrf_token %}
+                <input type="hidden" name="run_continuous" value="1">
+
+                <div class="lab-form-group">
+                    {{ continuous_form.distribution.label_tag }}
+                    {{ continuous_form.distribution }}
+                    {% if continuous_form.distribution.help_text %}
+                        <span class="help-text">{{ continuous_form.distribution.help_text }}</span>
+                    {% endif %}
+                    {% for error in continuous_form.distribution.errors %}
+                        <div class="text-muted">{{ error }}</div>
+                    {% endfor %}
+                </div>
+
+                <div class="lab-form-group">
+                    {{ continuous_form.param1.label_tag }}
+                    {{ continuous_form.param1 }}
+                    {% if continuous_form.param1.help_text %}
+                        <span class="help-text">{{ continuous_form.param1.help_text }}</span>
+                    {% endif %}
+                    {% for error in continuous_form.param1.errors %}
+                        <div class="text-muted">{{ error }}</div>
+                    {% endfor %}
+                </div>
+
+                <div class="lab-form-group">
+                    {{ continuous_form.param2.label_tag }}
+                    {{ continuous_form.param2 }}
+                    {% if continuous_form.param2.help_text %}
+                        <span class="help-text">{{ continuous_form.param2.help_text }}</span>
+                    {% endif %}
+                    {% for error in continuous_form.param2.errors %}
+                        <div class="text-muted">{{ error }}</div>
+                    {% endfor %}
+                </div>
+
+                <div class="lab-form-group">
+                    {{ continuous_form.sample_size.label_tag }}
+                    {{ continuous_form.sample_size }}
+                    {% if continuous_form.sample_size.help_text %}
+                        <span class="help-text">{{ continuous_form.sample_size.help_text }}</span>
+                    {% endif %}
+                    {% for error in continuous_form.sample_size.errors %}
+                        <div class="text-muted">{{ error }}</div>
+                    {% endfor %}
+                </div>
+
+                {% if continuous_form.non_field_errors %}
+                    <div class="text-muted">
+                        {% for error in continuous_form.non_field_errors %}
+                            <p>{{ error }}</p>
+                        {% endfor %}
+                    </div>
+                {% endif %}
+
+                <button type="submit">Run Continuous Simulation</button>
+            </form>
+
+            {% if continuous_result %}
+                <div class="result">
+                    <h3>Results for {{ continuous_result.distribution_name }} ({{ continuous_result.params }}):</h3>
+
+                    <p><strong>Sample (first 20 values):</strong> {{ continuous_result.sample }}</p>
+
+                    <h4>Descriptive Statistics:</h4>
+                    <ul>
+                        {% for key, value in continuous_result.descriptive_stats.items %}
+                            <li><strong>{{ key }}:</strong> {{ value|floatformat:4 }}</li>
+                        {% endfor %}
+                    </ul>
+
+                    <h4>Confidence Interval for Mean (95%):</h4>
+                    <p>({{ continuous_result.ci_mean.0|floatformat:4 }}, {{ continuous_result.ci_mean.1|floatformat:4 }}, {{ continuous_result.ci_mean.2|floatformat:4 }})</p>
+
+                    <h4>Histogram:</h4>
+                    {% if continuous_result.histogram %}
+                        <img src="data:image/png;base64,{{ continuous_result.histogram }}" alt="Histogram" style="max-width: 100%; height: auto;" />
+                    {% else %}
+                        <p class="text-muted">Error generating histogram.</p>
+                    {% endif %}
+
+                    <h4>Kolmogorov-Smirnov Test:</h4>
+                    <ul>
+                        <li><strong>Test:</strong> {{ continuous_result.ks_test.test_name }}</li>
+                        <li><strong>Statistic:</strong> {{ continuous_result.ks_test.statistic|floatformat:4 }}</li>
+                        <li><strong>p-value:</strong> {{ continuous_result.ks_test.p_value|floatformat:4 }}</li>
+                        <li><strong>Alpha:</strong> {{ continuous_result.ks_test.alpha }}</li>
+                        <li><strong>Reject H0:</strong> {{ continuous_result.ks_test.reject_null|yesno:"Yes,No" }}</li>
+                        <li><strong>Interpretation:</strong> {{ continuous_result.ks_test.interpretation }}</li>
+                    </ul>
+                </div>
+            {% endif %}
+        </div>
+
+        <!-- Task 2 -->
+        <div class="lab-task">
+            <h2>Task 2: Simulation Of Discrete Random Variables (Interval Method)</h2>
+            <form method="post" class="lab-form">
+                {% csrf_token %}
+                <input type="hidden" name="run_discrete" value="1">
+
+                <div class="lab-form-group">
+                    {{ discrete_form.values.label_tag }}
+                    {{ discrete_form.values }}
+                    {% if discrete_form.values.help_text %}
+                        <span class="help-text">{{ discrete_form.values.help_text }}</span>
+                    {% endif %}
+                    {% for error in discrete_form.values.errors %}
+                        <div class="text-muted">{{ error }}</div>
+                    {% endfor %}
+                </div>
+
+                <div class="lab-form-group">
+                    {{ discrete_form.probabilities.label_tag }}
+                    {{ discrete_form.probabilities }}
+                    {% if discrete_form.probabilities.help_text %}
+                        <span class="help-text">{{ discrete_form.probabilities.help_text }}</span>
+                    {% endif %}
+                    {% for error in discrete_form.probabilities.errors %}
+                        <div class="text-muted">{{ error }}</div>
+                    {% endfor %}
+                </div>
+
+                <div class="lab-form-group">
+                    {{ discrete_form.sample_size.label_tag }}
+                    {{ discrete_form.sample_size }}
+                    {% if discrete_form.sample_size.help_text %}
+                        <span class="help-text">{{ discrete_form.sample_size.help_text }}</span>
+                    {% endif %}
+                    {% for error in discrete_form.sample_size.errors %}
+                        <div class="text-muted">{{ error }}</div>
+                    {% endfor %}
+                </div>
+
+                {% if discrete_form.non_field_errors %}
+                    <div class="text-muted">
+                        {% for error in discrete_form.non_field_errors %}
+                            <p>{{ error }}</p>
+                        {% endfor %}
+                    </div>
+                {% endif %}
+
+                <button type="submit">Run Discrete Simulation</button>
+            </form>
+
+            {% if discrete_result %}
+                <div class="result">
+                    <h3>Results for Custom Discrete Distribution:</h3>
+                    <p><strong>Values:</strong> {{ discrete_result.values }}</p>
+                    <p><strong>Probabilities:</strong> {{ discrete_result.probabilities }}</p>
+
+                    <p><strong>Sample (first 20 values):</strong> {{ discrete_result.sample }}</p>
+
+                    <h4>Descriptive Statistics:</h4>
+                    <ul>
+                        {% for key, value in discrete_result.descriptive_stats.items %}
+                            <li><strong>{{ key }}:</strong> {{ value|floatformat:4 }}</li>
+                        {% endfor %}
+                    </ul>
+
+                    <h4>Confidence Interval for Mean (95%):</h4>
+                    <p>({{ discrete_result.ci_mean.0|floatformat:4 }}, {{ discrete_result.ci_mean.1|floatformat:4 }}, {{ discrete_result.ci_mean.2|floatformat:4 }})</p>
+
+                    <h4>Frequency Chart:</h4>
+                    {% if discrete_result.chart %}
+                        <img src="data:image/png;base64,{{ discrete_result.chart }}" alt="Frequency Chart" style="max-width: 100%; height: auto;" />
+                    {% else %}
+                        <p class="text-muted">Error generating chart.</p>
+                    {% endif %}
+
+                    <h4>Chi-squared Test:</h4>
+                    <ul>
+                        <li><strong>Test:</strong> {{ discrete_result.chi2_test.test_name }}</li>
+                        {% if discrete_result.chi2_test.statistic is not None %}
+                            <li><strong>Statistic:</strong> {{ discrete_result.chi2_test.statistic|floatformat:4 }}</li>
+                            <li><strong>p-value:</strong> {{ discrete_result.chi2_test.p_value|floatformat:4 }}</li>
+                            <li><strong>Alpha:</strong> {{ discrete_result.chi2_test.alpha }}</li>
+                            <li><strong>Reject H0:</strong> {{ discrete_result.chi2_test.reject_null|yesno:"Yes,No" }}</li>
+                            <li><strong>Interpretation:</strong> {{ discrete_result.chi2_test.interpretation }}</li>
+                        {% else %}
+                            <li><strong>Info:</strong> {{ discrete_result.chi2_test.interpretation }}</li>
+                        {% endif %}
+                    </ul>
+                </div>
+            {% endif %}
+        </div>
+    {% endif %}
+{% endblock %}

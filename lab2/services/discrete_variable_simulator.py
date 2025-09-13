@@ -11,7 +11,6 @@ class DiscreteVariableSimulator(BaseSimulator):
         binom=stats.binom,
         geom=stats.geom,
         poisson=stats.poisson,
-        hypergeom=stats.hypergeom
     )
 
     @classmethod
