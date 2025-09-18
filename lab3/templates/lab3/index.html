@@ -1,0 +1,339 @@
+{% extends 'layout.html' %}
+
+{% load static %}
+{% load lab3_extras %}
+
+{% block title %}Lab 3{% endblock %}
+
+{% block content %}
+    {% if lab_error %}
+        <div class="lab-error">
+            <strong>Error!</strong> {{ lab_error }}
+        </div>
+    {% else %}
+        <h1>Lab 3: Simulation Of Bivariate Random Variables</h1>
+
+        <!-- Task 1 -->
+        <div class="lab-task">
+            <h2>Task 1: Simulation Of Continuous Bivariate Random Variable</h2>
+            <form method="post" class="lab-form">
+                {% csrf_token %}
+                <input type="hidden" name="run_continuous" value="1">
+
+                <div class="lab-form-group">
+                    {{ continuous_form.sample_size.label_tag }}
+                    {{ continuous_form.sample_size }}
+                    {% if continuous_form.sample_size.help_text %}
+                        <span class="help-text">{{ continuous_form.sample_size.help_text }}</span>
+                    {% endif %}
+                    {% for error in continuous_form.sample_size.errors %}
+                        <div class="text-muted">{{ error }}</div>
+                    {% endfor %}
+                </div>
+
+                <div class="lab-form-group">
+                    {{ continuous_form.confidence_level.label_tag }}
+                    {{ continuous_form.confidence_level }}
+                    {% if continuous_form.confidence_level.help_text %}
+                        <span class="help-text">{{ continuous_form.confidence_level.help_text }}</span>
+                    {% endif %}
+                    {% for error in continuous_form.confidence_level.errors %}
+                        <div class="text-muted">{{ error }}</div>
+                    {% endfor %}
+                </div>
+
+                <div class="lab-form-group">
+                    {{ continuous_form.include_3d.label_tag }}
+                    {{ continuous_form.include_3d }}
+                    {% if continuous_form.include_3d.help_text %}
+                        <span class="help-text">{{ continuous_form.include_3d.help_text }}</span>
+                    {% endif %}
+                    {% for error in continuous_form.include_3d.errors %}
+                        <div class="text-muted">{{ error }}</div>
+                    {% endfor %}
+                </div>
+
+                {% if continuous_form.non_field_errors %}
+                    <div class="text-muted">
+                        {% for error in continuous_form.non_field_errors %}
+                            <p>{{ error }}</p>
+                        {% endfor %}
+                    </div>
+                {% endif %}
+
+                <button type="submit">Run Continuous Simulation</button>
+            </form>
+
+            {% if continuous_result %}
+                <div class="result">
+                    <h3>Results for Continuous Bivariate Distribution (Variant 4):</h3>
+
+                    <p><strong>Sample Size:</strong> {{ continuous_result.sample_size }}</p>
+                    <p><strong>Sample (first 10 pairs):</strong> {{ continuous_result.sample }}</p>
+
+                    <h4>Descriptive Statistics for X:</h4>
+                    <ul>
+                        {% for key, value in continuous_result.stats_x.items %}
+                            <li><strong>{{ key }}:</strong> {{ value|floatformat:4 }}</li>
+                        {% endfor %}
+                    </ul>
+
+                    <h4>Descriptive Statistics for Y:</h4>
+                    <ul>
+                        {% for key, value in continuous_result.stats_y.items %}
+                            <li><strong>{{ key }}:</strong> {{ value|floatformat:4 }}</li>
+                        {% endfor %}
+                    </ul>
+
+                    <h4>Confidence Interval for Mean of X ({{ continuous_result.confidence_level|floatformat:2 }}):</h4>
+                    <p>({{ continuous_result.ci_mean_x.0|floatformat:4 }}, {{ continuous_result.ci_mean_x.1|floatformat:4 }}, {{ continuous_result.ci_mean_x.2|floatformat:4 }})</p>
+
+                    <h4>Confidence Interval for Mean of Y ({{ continuous_result.confidence_level|floatformat:2 }}):</h4>
+                    <p>({{ continuous_result.ci_mean_y.0|floatformat:4 }}, {{ continuous_result.ci_mean_y.1|floatformat:4 }}, {{ continuous_result.ci_mean_y.2|floatformat:4 }})</p>
+
+                    <h4>Confidence Interval for Std of X ({{ continuous_result.confidence_level|floatformat:2 }}):</h4>
+                    <p>({{ continuous_result.ci_std_x.0|floatformat:4 }}, {{ continuous_result.ci_std_x.1|floatformat:4 }}, {{ continuous_result.ci_std_x.2|floatformat:4 }})</p>
+
+                    <h4>Confidence Interval for Std of Y ({{ continuous_result.confidence_level|floatformat:2 }}):</h4>
+                    <p>({{ continuous_result.ci_std_y.0|floatformat:4 }}, {{ continuous_result.ci_std_y.1|floatformat:4 }}, {{ continuous_result.ci_std_y.2|floatformat:4 }})</p>
+
+                    <h4>Covariance and Correlation:</h4>
+                    <ul>
+                        <li><strong>Covariance (X, Y):</strong> {{ continuous_result.covariance|floatformat:6 }}</li>
+                        <li><strong>Correlation (X, Y):</strong> {{ continuous_result.correlation|floatformat:6 }}</li>
+                    </ul>
+
+                    <h4>Test for Independence (Pearson):</h4>
+                    <ul>
+                        <li><strong>Test:</strong> {{ continuous_result.independence_test.test_name }}</li>
+                        <li><strong>Correlation Estimate:</strong> {{ continuous_result.independence_test.correlation_estimate|floatformat:6 }}</li>
+                        <li><strong>Statistic:</strong> {{ continuous_result.independence_test.statistic|floatformat:4 }}</li>
+                        <li><strong>p-value:</strong> {{ continuous_result.independence_test.p_value|floatformat:4 }}</li>
+                        <li><strong>Alpha:</strong> {{ continuous_result.independence_test.alpha }}</li>
+                        <li><strong>Reject H0 (Independent):</strong> {{ continuous_result.independence_test.reject_null|yesno:"Yes,No" }}</li>
+                        <li><strong>Interpretation:</strong> {{ continuous_result.independence_test.interpretation }}</li>
+                    </ul>
+
+                    <h4>Histogram of X with Theoretical Density:</h4>
+                    {% if continuous_result.histogram_x %}
+                        <img src="data:image/png;base64,{{ continuous_result.histogram_x }}" alt="Histogram X" style="max-width: 100%; height: auto;" />
+                    {% else %}
+                        <p class="text-muted">Error generating histogram for X.</p>
+                    {% endif %}
+
+                    <h4>Histogram of Y with Theoretical Density:</h4>
+                    {% if continuous_result.histogram_y %}
+                        <img src="data:image/png;base64,{{ continuous_result.histogram_y }}" alt="Histogram Y" style="max-width: 100%; height: auto;" />
+                    {% else %}
+                        <p class="text-muted">Error generating histogram for Y.</p>
+                    {% endif %}
+
+                    <h4>Conditional Densities f(y|x):</h4>
+                    {% for x_val, data in continuous_result.conditional_densities_demo.items %}
+                        <div style="margin-bottom: 1rem; padding: 0.5rem; border: 1px solid var(--border); border-radius: 4px;">
+                            <h5>For x = {{ x_val }}</h5>
+                            <p>Conditional density values for y in range [{{ data.y_values.0|floatformat:2 }}, {{ data.y_values|last|floatformat:2 }}].</p>
+                            <details>
+                                <summary>View Density Values</summary>
+                                <ul style="max-height: 200px; overflow-y: auto;">
+                                    {% for y_val in data.y_values %}
+                                        {% with forloop.counter0 as index %}
+                                            <li>y = {{ y_val|floatformat:2 }} → f(y|x) = {{ data.densities|get_item:index|floatformat:6 }}</li>
+                                        {% endwith %}
+                                    {% endfor %}
+                                </ul>
+                            </details>
+                        </div>
+                    {% endfor %}
+
+                    {% if continuous_result.histogram_3d %}
+                        <h4>3D Histogram and Density Surface:</h4>
+                        <img src="data:image/png;base64,{{ continuous_result.histogram_3d }}" alt="3D Histogram" style="max-width: 100%; height: auto;" />
+                    {% elif form.cleaned_data.include_3d %}
+                        <p class="text-muted">Error generating 3D plot.</p>
+                    {% endif %}
+                </div>
+            {% endif %}
+        </div>
+
+        <!-- Task 2 -->
+        <div class="lab-task">
+            <h2>Task 2: Simulation Of Discrete Bivariate Random Variable</h2>
+            <form method="post" class="lab-form">
+                {% csrf_token %}
+                <input type="hidden" name="run_discrete" value="1">
+
+                <div class="lab-form-group">
+                    {{ discrete_form.distribution_matrix.label_tag }}
+                    {{ discrete_form.distribution_matrix }}
+                    {% if discrete_form.distribution_matrix.help_text %}
+                        <span class="help-text">{{ discrete_form.distribution_matrix.help_text }}</span>
+                    {% endif %}
+                    {% for error in discrete_form.distribution_matrix.errors %}
+                        <div class="text-muted">{{ error }}</div>
+                    {% endfor %}
+                </div>
+
+                <div class="lab-form-group">
+                    {{ discrete_form.sample_size.label_tag }}
+                    {{ discrete_form.sample_size }}
+                    {% if discrete_form.sample_size.help_text %}
+                        <span class="help-text">{{ discrete_form.sample_size.help_text }}</span>
+                    {% endif %}
+                    {% for error in discrete_form.sample_size.errors %}
+                        <div class="text-muted">{{ error }}</div>
+                    {% endfor %}
+                </div>
+
+                <div class="lab-form-group">
+                    {{ discrete_form.confidence_level.label_tag }}
+                    {{ discrete_form.confidence_level }}
+                    {% if discrete_form.confidence_level.help_text %}
+                        <span class="help-text">{{ discrete_form.confidence_level.help_text }}</span>
+                    {% endif %}
+                    {% for error in discrete_form.confidence_level.errors %}
+                        <div class="text-muted">{{ error }}</div>
+                    {% endfor %}
+                </div>
+
+                <div class="lab-form-group">
+                    {{ discrete_form.include_3d.label_tag }}
+                    {{ discrete_form.include_3d }}
+                    {% if discrete_form.include_3d.help_text %}
+                        <span class="help-text">{{ discrete_form.include_3d.help_text }}</span>
+                    {% endif %}
+                    {% for error in discrete_form.include_3d.errors %}
+                        <div class="text-muted">{{ error }}</div>
+                    {% endfor %}
+                </div>
+
+                {% if discrete_form.non_field_errors %}
+                    <div class="text-muted">
+                        {% for error in discrete_form.non_field_errors %}
+                            <p>{{ error }}</p>
+                        {% endfor %}
+                    </div>
+                {% endif %}
+
+                <button type="submit">Run Discrete Simulation</button>
+            </form>
+
+            {% if discrete_result %}
+                <div class="result">
+                    <h3>Results for Custom Discrete Distribution:</h3>
+
+                    <p><strong>Sample Size:</strong> {{ discrete_result.sample_size }}</p>
+                    <p><strong>Sample (first 10 pairs):</strong> {{ discrete_result.sample }}</p>
+
+                    <h4>Theoretical Distribution Matrix:</h4>
+                    <ul>
+                        {% for pair, prob in discrete_result.distribution_matrix.items %}
+                            <li><strong>{{ pair }}:</strong> {{ prob|floatformat:4 }}</li>
+                        {% endfor %}
+                    </ul>
+
+                    {% if discrete_result.stats_x %}
+                        <h4>Descriptive Statistics for X:</h4>
+                        <ul>
+                            {% for key, value in discrete_result.stats_x.items %}
+                                <li><strong>{{ key }}:</strong> {{ value|floatformat:4 }}</li>
+                            {% endfor %}
+                        </ul>
+                    {% endif %}
+
+                    {% if discrete_result.stats_y %}
+                        <h4>Descriptive Statistics for Y:</h4>
+                        <ul>
+                            {% for key, value in discrete_result.stats_y.items %}
+                                <li><strong>{{ key }}:</strong> {{ value|floatformat:4 }}</li>
+                            {% endfor %}
+                        </ul>
+                    {% endif %}
+
+                    {% if discrete_result.ci_mean_x %}
+                        <h4>Confidence Interval for Mean of X ({{ discrete_result.confidence_level|floatformat:2 }}):</h4>
+                        <p>({{ discrete_result.ci_mean_x.0|floatformat:4 }}, {{ discrete_result.ci_mean_x.1|floatformat:4 }}, {{ discrete_result.ci_mean_x.2|floatformat:4 }})</p>
+                    {% endif %}
+
+                    {% if discrete_result.ci_mean_y %}
+                        <h4>Confidence Interval for Mean of Y ({{ discrete_result.confidence_level|floatformat:2 }}):</h4>
+                        <p>({{ discrete_result.ci_mean_y.0|floatformat:4 }}, {{ discrete_result.ci_mean_y.1|floatformat:4 }}, {{ discrete_result.ci_mean_y.2|floatformat:4 }})</p>
+                    {% endif %}
+
+                    {% if discrete_result.ci_std_x %}
+                        <h4>Confidence Interval for Std of X ({{ discrete_result.confidence_level|floatformat:2 }}):</h4>
+                        <p>({{ discrete_result.ci_std_x.0|floatformat:4 }}, {{ discrete_result.ci_std_x.1|floatformat:4 }}, {{ discrete_result.ci_std_x.2|floatformat:4 }})</p>
+                    {% endif %}
+
+                    {% if discrete_result.ci_std_y %}
+                        <h4>Confidence Interval for Std of Y ({{ discrete_result.confidence_level|floatformat:2 }}):</h4>
+                        <p>({{ discrete_result.ci_std_y.0|floatformat:4 }}, {{ discrete_result.ci_std_y.1|floatformat:4 }}, {{ discrete_result.ci_std_y.2|floatformat:4 }})</p>
+                    {% endif %}
+
+                    {% if discrete_result.covariance is not None %}
+                        <h4>Covariance and Correlation:</h4>
+                        <ul>
+                            <li><strong>Covariance (X, Y):</strong> {{ discrete_result.covariance|floatformat:6 }}</li>
+                            <li><strong>Correlation (X, Y):</strong> {{ discrete_result.correlation|floatformat:6 }}</li>
+                        </ul>
+                    {% endif %}
+
+                    <h4>Test for Independence (Pearson):</h4>
+                    <ul>
+                        <li><strong>Test:</strong> {{ discrete_result.independence_test.test_name }}</li>
+                        {% if discrete_result.independence_test.correlation_estimate is not none %}
+                            <li><strong>Correlation Estimate:</strong> {{ discrete_result.independence_test.correlation_estimate|floatformat:6 }}</li>
+                        {% endif %}
+                        {% if discrete_result.independence_test.statistic is not none %}
+                            <li><strong>Statistic:</strong> {{ discrete_result.independence_test.statistic|floatformat:4 }}</li>
+                            <li><strong>p-value:</strong> {{ discrete_result.independence_test.p_value|floatformat:4 }}</li>
+                            <li><strong>Alpha:</strong> {{ discrete_result.independence_test.alpha }}</li>
+                            <li><strong>Reject H0 (Independent):</strong> {{ discrete_result.independence_test.reject_null|yesno:"Yes,No" }}</li>
+                        {% endif %}
+                        <li><strong>Interpretation:</strong> {{ discrete_result.independence_test.interpretation }}</li>
+                    </ul>
+
+                    <h4>Marginal Distribution of X:</h4>
+                    <ul>
+                        {% for x_val, prob in discrete_result.marginal_x.items %}
+                            <li><strong>X = {{ x_val }}:</strong> {{ prob|floatformat:4 }}</li>
+                        {% endfor %}
+                    </ul>
+
+                    <h4>Conditional Distributions P(Y|X=x):</h4>
+                    {% for x_val, cond_dist in discrete_result.conditional_distributions.items %}
+                        <div style="margin-bottom: 1rem; padding: 0.5rem; border: 1px solid var(--border); border-radius: 4px;">
+                            <h5>For X = {{ x_val }}</h5>
+                            <ul>
+                                {% for y_val, prob in cond_dist.items %}
+                                    <li>P(Y = {{ y_val }} | X = {{ x_val }}) = {{ prob|floatformat:4 }}</li>
+                                {% endfor %}
+                            </ul>
+                        </div>
+                    {% endfor %}
+
+                    <h4>Frequency Chart of X:</h4>
+                    {% if discrete_result.chart_x %}
+                        <img src="data:image/png;base64,{{ discrete_result.chart_x }}" alt="Chart X" style="max-width: 100%; height: auto;" />
+                    {% else %}
+                        <p class="text-muted">Error generating chart for X.</p>
+                    {% endif %}
+
+                    <h4>Frequency Chart of Y:</h4>
+                    {% if discrete_result.chart_y %}
+                        <img src="data:image/png;base64,{{ discrete_result.chart_y }}" alt="Chart Y" style="max-width: 100%; height: auto;" />
+                    {% else %}
+                        <p class="text-muted">Error generating chart for Y.</p>
+                    {% endif %}
+
+                    {% if discrete_result.chart_3d %}
+                        <h4>3D Histogram: Observed vs Theoretical:</h4>
+                        <img src="data:image/png;base64,{{ discrete_result.chart_3d }}" alt="3D Histogram" style="max-width: 100%; height: auto;" />
+                    {% elif discrete_form.cleaned_data.include_3d %}
+                        <p class="text-muted">Error generating 3D plot.</p>
+                    {% endif %}
+                </div>
+            {% endif %}
+        </div>
+    {% endif %}
+{% endblock %}
