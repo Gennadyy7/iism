@@ -26,3 +26,23 @@ class BalanceEquationsSolver:
         b[-1] = 1.0
         probs = np.linalg.solve(A, b)
         return {self.states[i]: float(probs[i]) for i in range(n)}
+
+    def get_balance_equations(self) -> list[str]:
+        equations = []
+        for s in self.states:
+            outs = self.transitions[s]
+            incoming = []
+            for t, t_outs in self.transitions.items():
+                if s in t_outs:
+                    rate = t_outs[s]
+                    incoming.append(f"{rate}·P{t}")
+            outgoing_sum = sum(outs.values())
+            if incoming:
+                left = " + ".join(incoming)
+            else:
+                left = "0"
+            right = f"{outgoing_sum}·P{s}"
+            equations.append(f"{left} = {right}")
+        norm = " + ".join(f"P{s}" for s in self.states) + " = 1"
+        equations.append(norm)
+        return equations

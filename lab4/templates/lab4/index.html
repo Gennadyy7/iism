@@ -95,11 +95,42 @@
                     <li><strong>μ₂ (Service rate Type II):</strong> {{ result.input_params.mu2 }}</li>
                 </ul>
 
+                <h2>Marked State Transition Graph</h2>
+                <p>Transitions are labeled with arrival/service rates. Special case: "λ₁ (preemption, loss)" occurs when a Type I arrival finds the system full with only Type II jobs.</p>
+                <table>
+                    <thead>
+                        <tr>
+                            <th>From State</th>
+                            <th>To State</th>
+                            <th>Transition Type</th>
+                            <th>Rate Value</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for tr in result.transitions %}
+                            <tr>
+                                <td>{{ tr.from }}</td>
+                                <td>{{ tr.to }}</td>
+                                <td>{{ tr.label }}</td>
+                                <td>{{ tr.rate }}</td>
+                            </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+
+                <h2>Global Balance Equations System</h2>
+                <p>The system consists of flow balance equations for each state and a normalization condition.</p>
+                <div class="equations" style="font-family: monospace; padding: 12px; border-radius: 4px; margin: 12px 0;">
+                    {% for eq in result.balance_equations %}
+                        <div style="margin: 6px 0;">{{ eq }}</div>
+                    {% endfor %}
+                </div>
+
                 <h2>Steady-State Probabilities</h2>
                 <table>
                     <thead>
                         <tr>
-                            <th>State</th>
+                            <th>State (i, j)</th>
                             <th>Probability</th>
                         </tr>
                     </thead>
@@ -125,7 +156,13 @@
                         {% for key, value in result.metrics.items %}
                             <tr>
                                 <td>{{ key }}</td>
-                                <td>{{ value }}</td>
+                                <td>
+                                    {% if value is not None %}
+                                        {{ value }}
+                                    {% else %}
+                                        —
+                                    {% endif %}
+                                </td>
                             </tr>
                         {% endfor %}
                     </tbody>

@@ -48,6 +48,41 @@ class PriorityQueueModel(BaseQueueModel):
     def get_transitions(self) -> dict[tuple[int, int], dict[tuple[int, int], float]]:
         return self.transitions
 
+    def get_transition_descriptions(self) -> list[dict]:
+        desc = []
+        for (i, j), outs in self.transitions.items():
+            from_state = (i, j)
+            for (ni, nj), rate in outs.items():
+                if ni == i + 1 and nj == j:
+                    if i == 0 and i + j == self.K:
+                        label = "λ₁ (preemption, loss)"
+                    else:
+                        label = "λ₁"
+                elif ni == i and nj == j + 1:
+                    label = "λ₂"
+                elif ni == i - 1 and nj == j:
+                    label = "μ₁"
+                elif ni == i and nj == j - 1:
+                    label = "μ₂"
+                else:
+                    if rate == self.l1:
+                        label = "λ₁"
+                    elif rate == self.l2:
+                        label = "λ₂"
+                    elif rate == self.m1:
+                        label = "μ₁"
+                    elif rate == self.m2:
+                        label = "μ₂"
+                    else:
+                        label = "?"
+                desc.append({
+                    'from': from_state,
+                    'to': (ni, nj),
+                    'label': label,
+                    'rate': round(rate, 6)
+                })
+        return desc
+
     def debug_print(self) -> None:
         for state, outs in sorted(self.transitions.items()):
             outs_str = ", ".join(f"{t}:{r}" for t, r in outs.items())

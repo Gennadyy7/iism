@@ -56,7 +56,9 @@ class Lab4View(TemplateView):
                         'lambda2': lambda2,
                         'mu1': mu1,
                         'mu2': mu2
-                    }
+                    },
+                    'transitions': report['transitions'],
+                    'balance_equations': report['balance_equations'],
                 }
 
             except Exception as e:

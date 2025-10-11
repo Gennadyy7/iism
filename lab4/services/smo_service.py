@@ -14,6 +14,10 @@ class SMOService:
         solver = BalanceEquationsSolver(transitions)
         probs = solver.solve()
         metrics = PerformanceMetrics(probs, self.model.l1, self.model.l2, self.model.m1, self.model.m2)
+
+        transition_desc = self.model.get_transition_descriptions()
+        balance_eqs = solver.get_balance_equations()
+
         report: dict[str, Any] = {
             'states': probs,
             'blocking': metrics.blocking_probabilities(),
@@ -22,5 +26,7 @@ class SMOService:
             'average_counts': metrics.average_counts(),
             'queue_lengths': metrics.average_queue_lengths(),
             'times': metrics.average_times(),
+            'transitions': transition_desc,
+            'balance_equations': balance_eqs,
         }
         return report
