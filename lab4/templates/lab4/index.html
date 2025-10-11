@@ -1,0 +1,171 @@
+{% extends 'layout.html' %}
+
+{% load static %}
+
+{% block title %}Lab 4{% endblock %}
+
+{% block content %}
+    {% if lab_error %}
+        <div class="lab-error">
+            <strong>Error!</strong> {{ lab_error }}
+        </div>
+    {% else %}
+        <h1>Lab 4: Priority Queue (SMO) Analysis</h1>
+
+        <div class="lab-task">
+            <h2>SMO Model Parameters</h2>
+            <form method="post" class="lab-form">
+                {% csrf_token %}
+
+                <div class="lab-form-group">
+                    {{ form.queue_length.label_tag }}
+                    {{ form.queue_length }}
+                    {% if form.queue_length.help_text %}
+                        <span class="help-text">{{ form.queue_length.help_text }}</span>
+                    {% endif %}
+                    {% for error in form.queue_length.errors %}
+                        <div class="text-muted">{{ error }}</div>
+                    {% endfor %}
+                </div>
+
+                <div class="lab-form-group">
+                    {{ form.lambda1.label_tag }}
+                    {{ form.lambda1 }}
+                    {% if form.lambda1.help_text %}
+                        <span class="help-text">{{ form.lambda1.help_text }}</span>
+                    {% endif %}
+                    {% for error in form.lambda1.errors %}
+                        <div class="text-muted">{{ error }}</div>
+                    {% endfor %}
+                </div>
+
+                <div class="lab-form-group">
+                    {{ form.lambda2.label_tag }}
+                    {{ form.lambda2 }}
+                    {% if form.lambda2.help_text %}
+                        <span class="help-text">{{ form.lambda2.help_text }}</span>
+                    {% endif %}
+                    {% for error in form.lambda2.errors %}
+                        <div class="text-muted">{{ error }}</div>
+                    {% endfor %}
+                </div>
+
+                <div class="lab-form-group">
+                    {{ form.mu1.label_tag }}
+                    {{ form.mu1 }}
+                    {% if form.mu1.help_text %}
+                        <span class="help-text">{{ form.mu1.help_text }}</span>
+                    {% endif %}
+                    {% for error in form.mu1.errors %}
+                        <div class="text-muted">{{ error }}</div>
+                    {% endfor %}
+                </div>
+
+                <div class="lab-form-group">
+                    {{ form.mu2.label_tag }}
+                    {{ form.mu2 }}
+                    {% if form.mu2.help_text %}
+                        <span class="help-text">{{ form.mu2.help_text }}</span>
+                    {% endif %}
+                    {% for error in form.mu2.errors %}
+                        <div class="text-muted">{{ error }}</div>
+                    {% endfor %}
+                </div>
+
+                {% if form.non_field_errors %}
+                    <div class="text-muted">
+                        {% for error in form.non_field_errors %}
+                            <p>{{ error }}</p>
+                        {% endfor %}
+                    </div>
+                {% endif %}
+
+                <button type="submit">Analyze Model</button>
+            </form>
+        </div>
+
+        {% if result %}
+            <div class="result">
+                <h2>Input Parameters</h2>
+                <ul>
+                    <li><strong>Queue length (R):</strong> {{ result.input_params.queue_length }}</li>
+                    <li><strong>λ₁ (Arrival rate Type I):</strong> {{ result.input_params.lambda1 }}</li>
+                    <li><strong>λ₂ (Arrival rate Type II):</strong> {{ result.input_params.lambda2 }}</li>
+                    <li><strong>μ₁ (Service rate Type I):</strong> {{ result.input_params.mu1 }}</li>
+                    <li><strong>μ₂ (Service rate Type II):</strong> {{ result.input_params.mu2 }}</li>
+                </ul>
+
+                <h2>Steady-State Probabilities</h2>
+                <table>
+                    <thead>
+                        <tr>
+                            <th>State</th>
+                            <th>Probability</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for row in result.steady_state %}
+                            <tr>
+                                <td>{{ row.state }}</td>
+                                <td>{{ row.probability }}</td>
+                            </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+
+                <h2>Performance Metrics: Times</h2>
+                <table>
+                    <thead>
+                        <tr>
+                            <th>Metric</th>
+                            <th>Value</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for key, value in result.metrics.items %}
+                            <tr>
+                                <td>{{ key }}</td>
+                                <td>{{ value }}</td>
+                            </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+
+                <h2>Blocking Probabilities</h2>
+                <ul>
+                    {% for key, value in result.blocking.items %}
+                        <li><strong>{{ key }}:</strong> {{ value }}</li>
+                    {% endfor %}
+                </ul>
+
+                <h2>Entrance Intensities</h2>
+                <ul>
+                    {% for key, value in result.entrance_intensities.items %}
+                        <li><strong>{{ key }}:</strong> {{ value }}</li>
+                    {% endfor %}
+                </ul>
+
+                <h2>Served Probabilities</h2>
+                <ul>
+                    {% for key, value in result.served.items %}
+                        <li><strong>{{ key }}:</strong> {{ value }}</li>
+                    {% endfor %}
+                </ul>
+
+                <h2>Average Counts</h2>
+                <ul>
+                    {% for key, value in result.average_counts.items %}
+                        <li><strong>{{ key }}:</strong> {{ value }}</li>
+                    {% endfor %}
+                </ul>
+
+                <h2>Average Queue Lengths</h2>
+                <ul>
+                    {% for key, value in result.queue_lengths.items %}
+                        <li><strong>{{ key }}:</strong> {{ value }}</li>
+                    {% endfor %}
+                </ul>
+            </div>
+        {% endif %}
+    {% endif %}
+{% endblock %}
