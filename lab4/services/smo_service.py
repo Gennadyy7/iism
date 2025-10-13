@@ -3,6 +3,7 @@ from typing import Any
 from lab4.services.balance_equations_solver import BalanceEquationsSolver
 from lab4.services.performance_metrics import PerformanceMetrics
 from lab4.services.priority_queue_model import PriorityQueueModel
+from lab4.services.priority_queue_simulator import PriorityQueueSimulator
 
 
 class SMOService:
@@ -30,3 +31,15 @@ class SMOService:
             'balance_equations': balance_eqs,
         }
         return report
+
+    def simulate(self, simulation_time: float, seed: int | None = None) -> dict:
+        simulator = PriorityQueueSimulator(
+            r=self.model.R,
+            lambda1=self.model.l1,
+            lambda2=self.model.l2,
+            mu1=self.model.m1,
+            mu2=self.model.m2,
+            simulation_time=simulation_time,
+            seed=seed
+        )
+        return simulator.run()

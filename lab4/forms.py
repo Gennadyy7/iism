@@ -32,3 +32,15 @@ class PriorityQueueForm(forms.Form):
         initial=1.5,
         help_text="Service rate for low-priority requests."
     )
+    simulation_time = forms.FloatField(
+        label="Simulation Time",
+        min_value=1.0,
+        initial=10000.0,
+        help_text="Duration of the simulation (higher = more accurate)."
+    )
+    random_seed = forms.IntegerField(
+        label="Random Seed (optional)",
+        required=False,
+        min_value=0,
+        help_text="Set for reproducible results."
+    )

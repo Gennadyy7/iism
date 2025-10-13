@@ -1,6 +1,7 @@
 {% extends 'layout.html' %}
 
 {% load static %}
+{% load lab4_extras %}
 
 {% block title %}Lab 4{% endblock %}
 
@@ -72,6 +73,28 @@
                     {% endfor %}
                 </div>
 
+                <div class="lab-form-group">
+                    {{ form.simulation_time.label_tag }}
+                    {{ form.simulation_time }}
+                    {% if form.simulation_time.help_text %}
+                        <span class="help-text">{{ form.simulation_time.help_text }}</span>
+                    {% endif %}
+                    {% for error in form.simulation_time.errors %}
+                        <div class="text-muted">{{ error }}</div>
+                    {% endfor %}
+                </div>
+
+                <div class="lab-form-group">
+                    {{ form.random_seed.label_tag }}
+                    {{ form.random_seed }}
+                    {% if form.random_seed.help_text %}
+                        <span class="help-text">{{ form.random_seed.help_text }}</span>
+                    {% endif %}
+                    {% for error in form.random_seed.errors %}
+                        <div class="text-muted">{{ error }}</div>
+                    {% endfor %}
+                </div>
+
                 {% if form.non_field_errors %}
                     <div class="text-muted">
                         {% for error in form.non_field_errors %}
@@ -93,9 +116,15 @@
                     <li><strong>λ₂ (Arrival rate Type II):</strong> {{ result.input_params.lambda2 }}</li>
                     <li><strong>μ₁ (Service rate Type I):</strong> {{ result.input_params.mu1 }}</li>
                     <li><strong>μ₂ (Service rate Type II):</strong> {{ result.input_params.mu2 }}</li>
+                    <li><strong>Simulation Time:</strong> {{ result.input_params.simulation_time }}</li>
+                    {% if result.input_params.random_seed %}
+                        <li><strong>Random Seed:</strong> {{ result.input_params.random_seed }}</li>
+                    {% endif %}
                 </ul>
 
-                <h2>Marked State Transition Graph</h2>
+                <h2>Theoretical Results (Analytical Model)</h2>
+
+                <h3>Marked State Transition Graph</h3>
                 <p>Transitions are labeled with arrival/service rates. Special case: "λ₁ (preemption, loss)" occurs when a Type I arrival finds the system full with only Type II jobs.</p>
                 <table>
                     <thead>
@@ -112,13 +141,13 @@
                                 <td>{{ tr.from }}</td>
                                 <td>{{ tr.to }}</td>
                                 <td>{{ tr.label }}</td>
-                                <td>{{ tr.rate }}</td>
+                                <td>{{ tr.rate|floatformat:6 }}</td>
                             </tr>
                         {% endfor %}
                     </tbody>
                 </table>
 
-                <h2>Global Balance Equations System</h2>
+                <h3>Global Balance Equations System</h3>
                 <p>The system consists of flow balance equations for each state and a normalization condition.</p>
                 <div class="equations" style="font-family: monospace; padding: 12px; border-radius: 4px; margin: 12px 0;">
                     {% for eq in result.balance_equations %}
@@ -126,7 +155,7 @@
                     {% endfor %}
                 </div>
 
-                <h2>Steady-State Probabilities</h2>
+                <h3>Steady-State Probabilities</h3>
                 <table>
                     <thead>
                         <tr>
@@ -138,70 +167,198 @@
                         {% for row in result.steady_state %}
                             <tr>
                                 <td>{{ row.state }}</td>
-                                <td>{{ row.probability }}</td>
+                                <td>{{ row.probability|floatformat:6 }}</td>
                             </tr>
                         {% endfor %}
                     </tbody>
                 </table>
 
-                <h2>Performance Metrics: Times</h2>
+                <h3>Performance Metrics: Times</h3>
+                <ul>
+                    {% for key, value in result.metrics.items %}
+                        <li><strong>{{ key }}:</strong>
+                            {% if value is not None %}{{ value|floatformat:6 }}{% else %}—{% endif %}
+                        </li>
+                    {% endfor %}
+                </ul>
+
+                <h3>Blocking Probabilities</h3>
+                <ul>
+                    {% for key, value in result.blocking.items %}
+                        <li><strong>{{ key }}:</strong> {{ value|floatformat:6 }}</li>
+                    {% endfor %}
+                </ul>
+
+                <h3>Entrance Intensities</h3>
+                <ul>
+                    {% for key, value in result.entrance_intensities.items %}
+                        <li><strong>{{ key }}:</strong> {{ value|floatformat:6 }}</li>
+                    {% endfor %}
+                </ul>
+
+                <h3>Served Throughputs</h3>
+                <ul>
+                    <li><strong>Type I:</strong> {{ result.served.I.throughput|floatformat:6 }}</li>
+                    <li><strong>Type II:</strong> {{ result.served.II.throughput|floatformat:6 }}</li>
+                </ul>
+
+                <h3>Average Counts (L1, L2)</h3>
+                <ul>
+                    {% for key, value in result.average_counts.items %}
+                        <li><strong>{{ key }}:</strong> {{ value|floatformat:6 }}</li>
+                    {% endfor %}
+                </ul>
+
+                <h3>Average Queue Lengths (Q1, Q2)</h3>
+                <ul>
+                    {% for key, value in result.queue_lengths.items %}
+                        <li><strong>{{ key }}:</strong> {{ value|floatformat:6 }}</li>
+                    {% endfor %}
+                </ul>
+
+                <h2>Empirical Results (Discrete-Event Simulation)</h2>
+                <p>Based on {{ result.simulation.arrivals.I }} Type I and {{ result.simulation.arrivals.II }} Type II arrivals over {{ result.simulation.simulation_time|floatformat:0 }} time units.</p>
+
+                <h3>Performance Metrics: Times</h3>
+                <ul>
+                    {% for key, value in result.simulation.metrics.items %}
+                        <li><strong>{{ key }}:</strong>
+                            {% if value is not None %}{{ value|floatformat:6 }}{% else %}—{% endif %}
+                        </li>
+                    {% endfor %}
+                </ul>
+
+                <h3>Blocking Probabilities</h3>
+                <ul>
+                    {% for key, value in result.simulation.blocking.items %}
+                        <li><strong>{{ key }}:</strong> {{ value|floatformat:6 }}</li>
+                    {% endfor %}
+                </ul>
+
+                <h3>Entrance Intensities</h3>
+                <ul>
+                    {% for key, value in result.simulation.entrance_intensities.items %}
+                        <li><strong>{{ key }}:</strong> {{ value|floatformat:6 }}</li>
+                    {% endfor %}
+                </ul>
+
+                <h3>Served Throughputs</h3>
+                <ul>
+                    <li><strong>Type I:</strong> {{ result.simulation.served.I.throughput|floatformat:6 }}</li>
+                    <li><strong>Type II:</strong> {{ result.simulation.served.II.throughput|floatformat:6 }}</li>
+                </ul>
+
+                <h3>Average Counts (L1, L2)</h3>
+                <ul>
+                    {% for key, value in result.simulation.average_counts.items %}
+                        <li><strong>{{ key }}:</strong> {{ value|floatformat:6 }}</li>
+                    {% endfor %}
+                </ul>
+
+                <h3>Average Queue Lengths (Q1, Q2)</h3>
+                <ul>
+                    {% for key, value in result.simulation.queue_lengths.items %}
+                        <li><strong>{{ key }}:</strong> {{ value|floatformat:6 }}</li>
+                    {% endfor %}
+                </ul>
+
+                <h2>Comparison: Theoretical vs Simulation</h2>
+
+                <h3>Times</h3>
                 <table>
                     <thead>
                         <tr>
                             <th>Metric</th>
-                            <th>Value</th>
+                            <th>Theoretical</th>
+                            <th>Simulation</th>
+                            <th>Abs. Error</th>
                         </tr>
                     </thead>
                     <tbody>
-                        {% for key, value in result.metrics.items %}
-                            <tr>
-                                <td>{{ key }}</td>
-                                <td>
-                                    {% if value is not None %}
-                                        {{ value }}
-                                    {% else %}
-                                        —
-                                    {% endif %}
-                                </td>
-                            </tr>
+                        {% for key, theo_val in result.metrics.items %}
+                            {% with sim_val=result.simulation.metrics|get_item:key error_val=result.comparison.metrics|get_item:key %}
+                                <tr>
+                                    <td>{{ key }}</td>
+                                    <td>{% if theo_val is not None %}{{ theo_val|floatformat:6 }}{% else %}—{% endif %}</td>
+                                    <td>{% if sim_val is not None %}{{ sim_val|floatformat:6 }}{% else %}—{% endif %}</td>
+                                    <td>{% if error_val is not None %}{{ error_val|floatformat:6 }}{% else %}—{% endif %}</td>
+                                </tr>
+                            {% endwith %}
                         {% endfor %}
                     </tbody>
                 </table>
 
-                <h2>Blocking Probabilities</h2>
-                <ul>
-                    {% for key, value in result.blocking.items %}
-                        <li><strong>{{ key }}:</strong> {{ value }}</li>
-                    {% endfor %}
-                </ul>
+                <h3>Blocking Probabilities</h3>
+                <table>
+                    <thead>
+                        <tr>
+                            <th>Type</th>
+                            <th>Theoretical</th>
+                            <th>Simulation</th>
+                            <th>Abs. Error</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for key, theo_val in result.blocking.items %}
+                            {% with sim_val=result.simulation.blocking|get_item:key error_val=result.comparison.blocking|get_item:key %}
+                                <tr>
+                                    <td>{{ key }}</td>
+                                    <td>{{ theo_val|floatformat:6 }}</td>
+                                    <td>{{ sim_val|floatformat:6 }}</td>
+                                    <td>{{ error_val|floatformat:6 }}</td>
+                                </tr>
+                            {% endwith %}
+                        {% endfor %}
+                    </tbody>
+                </table>
 
-                <h2>Entrance Intensities</h2>
-                <ul>
-                    {% for key, value in result.entrance_intensities.items %}
-                        <li><strong>{{ key }}:</strong> {{ value }}</li>
-                    {% endfor %}
-                </ul>
+                <h3>Average Counts</h3>
+                <table>
+                    <thead>
+                        <tr>
+                            <th>Metric</th>
+                            <th>Theoretical</th>
+                            <th>Simulation</th>
+                            <th>Abs. Error</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for key, theo_val in result.average_counts.items %}
+                            {% with sim_val=result.simulation.average_counts|get_item:key error_val=result.comparison.average_counts|get_item:key %}
+                                <tr>
+                                    <td>{{ key }}</td>
+                                    <td>{{ theo_val|floatformat:6 }}</td>
+                                    <td>{{ sim_val|floatformat:6 }}</td>
+                                    <td>{{ error_val|floatformat:6 }}</td>
+                                </tr>
+                            {% endwith %}
+                        {% endfor %}
+                    </tbody>
+                </table>
 
-                <h2>Served Probabilities</h2>
-                <ul>
-                    {% for key, value in result.served.items %}
-                        <li><strong>{{ key }}:</strong> {{ value }}</li>
-                    {% endfor %}
-                </ul>
-
-                <h2>Average Counts</h2>
-                <ul>
-                    {% for key, value in result.average_counts.items %}
-                        <li><strong>{{ key }}:</strong> {{ value }}</li>
-                    {% endfor %}
-                </ul>
-
-                <h2>Average Queue Lengths</h2>
-                <ul>
-                    {% for key, value in result.queue_lengths.items %}
-                        <li><strong>{{ key }}:</strong> {{ value }}</li>
-                    {% endfor %}
-                </ul>
+                <h3>Average Queue Lengths</h3>
+                <table>
+                    <thead>
+                        <tr>
+                            <th>Metric</th>
+                            <th>Theoretical</th>
+                            <th>Simulation</th>
+                            <th>Abs. Error</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for key, theo_val in result.queue_lengths.items %}
+                            {% with sim_val=result.simulation.queue_lengths|get_item:key error_val=result.comparison.queue_lengths|get_item:key %}
+                                <tr>
+                                    <td>{{ key }}</td>
+                                    <td>{{ theo_val|floatformat:6 }}</td>
+                                    <td>{{ sim_val|floatformat:6 }}</td>
+                                    <td>{{ error_val|floatformat:6 }}</td>
+                                </tr>
+                            {% endwith %}
+                        {% endfor %}
+                    </tbody>
+                </table>
             </div>
         {% endif %}
     {% endif %}
