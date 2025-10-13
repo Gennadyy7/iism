@@ -53,11 +53,10 @@ class PriorityQueueModel(BaseQueueModel):
         for (i, j), outs in self.transitions.items():
             from_state = (i, j)
             for (ni, nj), rate in outs.items():
-                if ni == i + 1 and nj == j:
-                    if i == 0 and i + j == self.K:
-                        label = "λ₁ (preemption, loss)"
-                    else:
-                        label = "λ₁"
+                if i == 0 and j == self.K and ni == 1 and nj == self.K - 1:
+                    label = "λ₁ (preemption, loss)"
+                elif ni == i + 1 and nj == j:
+                    label = "λ₁"
                 elif ni == i and nj == j + 1:
                     label = "λ₂"
                 elif ni == i - 1 and nj == j:
@@ -65,16 +64,16 @@ class PriorityQueueModel(BaseQueueModel):
                 elif ni == i and nj == j - 1:
                     label = "μ₂"
                 else:
-                    if rate == self.l1:
+                    if abs(rate - self.l1) < 1e-9:
                         label = "λ₁"
-                    elif rate == self.l2:
+                    elif abs(rate - self.l2) < 1e-9:
                         label = "λ₂"
-                    elif rate == self.m1:
+                    elif abs(rate - self.m1) < 1e-9:
                         label = "μ₁"
-                    elif rate == self.m2:
+                    elif abs(rate - self.m2) < 1e-9:
                         label = "μ₂"
                     else:
-                        label = "?"
+                        label = f"? ({rate})"
                 desc.append({
                     'from': from_state,
                     'to': (ni, nj),
