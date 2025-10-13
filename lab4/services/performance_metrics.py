@@ -56,6 +56,13 @@ class PerformanceMetrics:
         return {'L1': float(L1), 'L2': float(L2)}
 
     def average_queue_lengths(self) -> dict[str, float]:
+        """
+        Если есть заявки I (i > 0) → прибор занят I → все заявки II находятся в очереди → их число = j.
+        Если нет заявок I (i == 0) → прибор занят II → в очереди = j - 1.
+        Для Q1 проще:
+            Если i > 0, то одна заявка I на приборе, остальные (i - 1) — в очереди.
+            Если i == 0 → max(0, -1) = 0.
+        """
         P = self.P
         Q1 = sum(max(0, i - 1) * p for (i, j), p in P.items())
         Q2 = 0.0
