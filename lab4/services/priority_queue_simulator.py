@@ -38,11 +38,8 @@ class PriorityQueueSimulator:
         if seed is not None:
             random.seed(seed)
 
-        self.i = 0
-        self.j = 0
         self.server_busy = False
-        self.server_job_type = None
-
+        self.server_job_type: str | None = None
         self.queue_I: list[float] = []
         self.queue_II: list[float] = []
 
@@ -52,7 +49,6 @@ class PriorityQueueSimulator:
         self.blocked_II = 0
         self.served_I = 0
         self.served_II = 0
-        self.total_time = 0.0
         self.area_i = 0.0
         self.area_j = 0.0
         self.area_q1 = 0.0
@@ -62,27 +58,39 @@ class PriorityQueueSimulator:
         self.event_queue: list[Event] = []
 
     def _get_service_time(self, job_type: str) -> float:
-        if job_type == 'I':
-            return random.expovariate(self.mu1)
-        else:
-            return random.expovariate(self.mu2)
+        return random.expovariate(self.mu1 if job_type == 'I' else self.mu2)
 
     def _get_arrival_time(self, stream: str) -> float:
-        if stream == 'I':
-            return random.expovariate(self.lambda1)
-        else:
-            return random.expovariate(self.lambda2)
+        return random.expovariate(self.lambda1 if stream == 'I' else self.lambda2)
+
+    def _current_i(self) -> int:
+        return (1 if self.server_job_type == 'I' else 0) + len(self.queue_I)
+
+    def _current_j(self) -> int:
+        return (1 if self.server_job_type == 'II' else 0) + len(self.queue_II)
+
+    def _current_total(self) -> int:
+        return self._current_i() + self._current_j()
 
     def _update_areas(self, current_time: float) -> None:
         dt = current_time - self.last_event_time
-        self.area_i += self.i * dt
-        self.area_j += self.j * dt
+        if dt <= 0:
+            return
 
-        q1 = max(0, self.i - 1) if self.i > 0 else 0
-        if self.i > 0:
-            q2 = self.j
+        i = self._current_i()
+        j = self._current_j()
+
+        self.area_i += i * dt
+        self.area_j += j * dt
+
+        q1 = len(self.queue_I)
+
+        if self.server_job_type == 'I':
+            q2 = len(self.queue_II)
+        elif self.server_job_type == 'II':
+            q2 = len(self.queue_II)
         else:
-            q2 = max(0, self.j - 1) if self.j > 0 else 0
+            q2 = 0
 
         self.area_q1 += q1 * dt
         self.area_q2 += q2 * dt
@@ -90,66 +98,82 @@ class PriorityQueueSimulator:
         self.last_event_time = current_time
 
     def _start_service(self, current_time: float) -> None:
-        if self.i > 0:
+        if len(self.queue_I) > 0:
+            self.queue_I.pop(0)
             self.server_job_type = 'I'
             self.server_busy = True
             service_time = self._get_service_time('I')
             heapq.heappush(self.event_queue, Event(current_time + service_time, 'departure', 'I'))
-        elif self.j > 0:
+        elif len(self.queue_II) > 0:
+            self.queue_II.pop(0)
             self.server_job_type = 'II'
             self.server_busy = True
             service_time = self._get_service_time('II')
             heapq.heappush(self.event_queue, Event(current_time + service_time, 'departure', 'II'))
+        else:
+            self.server_busy = False
+            self.server_job_type = None
 
     def _handle_arrival_I(self, current_time: float) -> None:
         self.arrivals_I += 1
-        total = self.i + self.j
+        total = self._current_total()
 
         if total < self.K:
-            self.i += 1
             if not self.server_busy:
-                self._start_service(current_time)
+                self.server_busy = True
+                self.server_job_type = 'I'
+                service_time = self._get_service_time('I')
+                heapq.heappush(self.event_queue, Event(current_time + service_time, 'departure', 'I'))
+            else:
+                self.queue_I.append(current_time)
         elif total == self.K:
             if self.server_job_type == 'II':
-                self.j -= 1
                 self.server_busy = False
                 self.server_job_type = None
 
-                current_queue_len = len(self.queue_I) + len(self.queue_II)
-                if current_queue_len < self.R:
+                if len(self.queue_I) + len(self.queue_II) < self.R:
                     self.queue_II.append(current_time)
-                    self.j += 1
 
-                self.i += 1
-                self._start_service(current_time)
+                self.server_busy = True
+                self.server_job_type = 'I'
+                service_time = self._get_service_time('I')
+                heapq.heappush(self.event_queue, Event(current_time + service_time, 'departure', 'I'))
             else:
                 self.blocked_I += 1
-                return
         else:
             self.blocked_I += 1
-            return
+
+        next_arrival = current_time + self._get_arrival_time('I')
+        heapq.heappush(self.event_queue, Event(next_arrival, 'arrival_I'))
 
     def _handle_arrival_II(self, current_time: float) -> None:
         self.arrivals_II += 1
-        if self.i + self.j < self.K:
-            self.j += 1
+        total = self._current_total()
+
+        if total < self.K:
             if not self.server_busy:
-                self._start_service(current_time)
+                self.server_busy = True
+                self.server_job_type = 'II'
+                service_time = self._get_service_time('II')
+                heapq.heappush(self.event_queue, Event(current_time + service_time, 'departure', 'II'))
+            else:
+                self.queue_II.append(current_time)
         else:
             self.blocked_II += 1
+
+        next_arrival = current_time + self._get_arrival_time('II')
+        heapq.heappush(self.event_queue, Event(next_arrival, 'arrival_II'))
 
     def _handle_departure(self, current_time: float, job_type: str) -> None:
         if job_type == 'I':
             self.served_I += 1
-            self.i -= 1
         else:
             self.served_II += 1
-            self.j -= 1
 
         self.server_busy = False
         self.server_job_type = None
 
-        if self.i > 0 or self.j > 0:
+        if len(self.queue_I) > 0 or len(self.queue_II) > 0:
             self._start_service(current_time)
 
     def run(self) -> dict[str, Any]:
