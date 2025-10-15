@@ -118,7 +118,20 @@ class PriorityQueueSimulator:
         self.arrivals_I += 1
         total = self._current_total()
 
-        if total < self.K:
+        if self.server_busy and self.server_job_type == 'II':
+            self.server_busy = False
+            self.server_job_type = None
+
+            if len(self.queue_I) + len(self.queue_II) < self.R:
+                self.queue_II.append(current_time)
+            else:
+                self.blocked_II += 1
+
+            self.server_busy = True
+            self.server_job_type = 'I'
+            service_time = self._get_service_time('I')
+            heapq.heappush(self.event_queue, Event(current_time + service_time, 'departure', 'I'))
+        elif total < self.K:
             if not self.server_busy:
                 self.server_busy = True
                 self.server_job_type = 'I'
@@ -126,22 +139,6 @@ class PriorityQueueSimulator:
                 heapq.heappush(self.event_queue, Event(current_time + service_time, 'departure', 'I'))
             else:
                 self.queue_I.append(current_time)
-        elif total == self.K:
-            if self.server_job_type == 'II':
-                self.server_busy = False
-                self.server_job_type = None
-
-                if len(self.queue_I) + len(self.queue_II) < self.R:
-                    self.queue_II.append(current_time)
-                else:
-                    self.blocked_II += 1
-
-                self.server_busy = True
-                self.server_job_type = 'I'
-                service_time = self._get_service_time('I')
-                heapq.heappush(self.event_queue, Event(current_time + service_time, 'departure', 'I'))
-            else:
-                self.blocked_I += 1
         else:
             self.blocked_I += 1
 
@@ -167,6 +164,9 @@ class PriorityQueueSimulator:
         heapq.heappush(self.event_queue, Event(next_arrival, 'arrival_II'))
 
     def _handle_departure(self, current_time: float, job_type: str) -> None:
+        if self.server_job_type != job_type:
+            return
+
         if job_type == 'I':
             self.served_I += 1
         else:
