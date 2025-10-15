@@ -133,6 +133,8 @@ class PriorityQueueSimulator:
 
                 if len(self.queue_I) + len(self.queue_II) < self.R:
                     self.queue_II.append(current_time)
+                else:
+                    self.blocked_II += 1
 
                 self.server_busy = True
                 self.server_job_type = 'I'
