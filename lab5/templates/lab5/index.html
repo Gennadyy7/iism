@@ -1,0 +1,178 @@
+{% extends 'layout.html' %}
+
+{% load static %}
+{% load lab5_extras %}
+
+{% block title %}Lab 5{% endblock %}
+
+{% block content %}
+    {% if lab_error %}
+        <div class="lab-error">
+            <strong>Error!</strong> {{ lab_error }}
+        </div>
+    {% else %}
+        <h1>Lab 5: Petri Net Modeling and Analysis</h1>
+
+        <div class="lab-task">
+            <h2>Define Petri Net Structure</h2>
+            <form method="post" class="lab-form">
+                {% csrf_token %}
+
+                <div class="lab-form-group">
+                    {{ form.num_places.label_tag }}
+                    {{ form.num_places }}
+                    {% if form.num_places.help_text %}
+                        <span class="help-text">{{ form.num_places.help_text }}</span>
+                    {% endif %}
+                    {% for error in form.num_places.errors %}
+                        <div class="text-muted">{{ error }}</div>
+                    {% endfor %}
+                </div>
+
+                <div class="lab-form-group">
+                    {{ form.num_transitions.label_tag }}
+                    {{ form.num_transitions }}
+                    {% if form.num_transitions.help_text %}
+                        <span class="help-text">{{ form.num_transitions.help_text }}</span>
+                    {% endif %}
+                    {% for error in form.num_transitions.errors %}
+                        <div class="text-muted">{{ error }}</div>
+                    {% endfor %}
+                </div>
+
+                <div class="lab-form-group">
+                    {{ form.initial_marking.label_tag }}
+                    {{ form.initial_marking }}
+                    {% if form.initial_marking.help_text %}
+                        <span class="help-text">{{ form.initial_marking.help_text }}</span>
+                    {% endif %}
+                    {% for error in form.initial_marking.errors %}
+                        <div class="text-muted">{{ error }}</div>
+                    {% endfor %}
+                </div>
+
+                <div class="lab-form-group">
+                    {{ form.target_marking.label_tag }}
+                    {{ form.target_marking }}
+                    {% if form.target_marking.help_text %}
+                        <span class="help-text">{{ form.target_marking.help_text }}</span>
+                    {% endif %}
+                    {% for error in form.target_marking.errors %}
+                        <div class="text-muted">{{ error }}</div>
+                    {% endfor %}
+                </div>
+
+                {% for i in form.num_transitions.field.initial|default:4|make_list %}
+                    {% with transition_index=forloop.counter %}
+                        <h3>Transition t{{ transition_index }}</h3>
+                        <div class="lab-form-group">
+                            {{ form|get_field_by_name:"transition_"|add:transition_index|add:"_input"|safe.label_tag }}
+                            {{ form|get_field_by_name:"transition_"|add:transition_index|add:"_input"|safe }}
+                            {% if form|get_field_by_name:"transition_"|add:transition_index|add:"_input"|safe.field.help_text %}
+                                <span class="help-text">{{ form|get_field_by_name:"transition_"|add:transition_index|add:"_input"|safe.field.help_text }}</span>
+                            {% endif %}
+                            {% for error in form|get_field_by_name:"transition_"|add:transition_index|add:"_input"|safe.errors %}
+                                <div class="text-muted">{{ error }}</div>
+                            {% endfor %}
+                        </div>
+                        <div class="lab-form-group">
+                            {{ form|get_field_by_name:"transition_"|add:transition_index|add:"_output"|safe.label_tag }}
+                            {{ form|get_field_by_name:"transition_"|add:transition_index|add:"_output"|safe }}
+                            {% if form|get_field_by_name:"transition_"|add:transition_index|add:"_output"|safe.field.help_text %}
+                                <span class="help-text">{{ form|get_field_by_name:"transition_"|add:transition_index|add:"_output"|safe.field.help_text }}</span>
+                            {% endif %}
+                            {% for error in form|get_field_by_name:"transition_"|add:transition_index|add:"_output"|safe.errors %}
+                                <div class="text-muted">{{ error }}</div>
+                            {% endfor %}
+                        </div>
+                    {% endwith %}
+                {% endfor %}
+
+                {% if form.non_field_errors %}
+                    <div class="text-muted">
+                        {% for error in form.non_field_errors %}
+                            <p>{{ error }}</p>
+                        {% endfor %}
+                    </div>
+                {% endif %}
+
+                <button type="submit">Analyze Petri Net</button>
+            </form>
+        </div>
+
+        {% if result %}
+            <div class="result">
+                <h2>Input Network Definition</h2>
+                <ul>
+                    <li><strong>Places:</strong> {{ result.network.places|join:", " }}</li>
+                    <li><strong>Transitions:</strong> {{ result.network.transitions|join:", " }}</li>
+                    <li><strong>Initial Marking:</strong> {{ result.network.initial_marking|join:", " }}</li>
+                    {% if result.network.target_marking %}
+                        <li><strong>Target Marking:</strong> {{ result.network.target_marking|join:", " }}</li>
+                    {% endif %}
+                </ul>
+
+                <h3>Input Arcs (t → [p])</h3>
+                <ul>
+                    {% for t, places in result.network.input_arcs.items %}
+                        <li><strong>{{ t }}:</strong> {{ places|join:", " }}</li>
+                    {% endfor %}
+                </ul>
+
+                <h3>Output Arcs (t → [p])</h3>
+                <ul>
+                    {% for t, places in result.network.output_arcs.items %}
+                        <li><strong>{{ t }}:</strong> {{ places|join:", " }}</li>
+                    {% endfor %}
+                </ul>
+
+                <h2>Analysis Results</h2>
+
+                <h3>Structural & Behavioral Properties</h3>
+                <ul>
+                    <li><strong>Bounded:</strong> {{ result.analysis.is_bounded|yesno:"Yes,No" }}</li>
+                    <li><strong>Safe (1-bounded):</strong> {{ result.analysis.is_safe|yesno:"Yes,No" }}</li>
+                    <li><strong>1-Conservative (token count constant):</strong> {{ result.analysis.is_conservative|yesno:"Yes,No" }}</li>
+                    <li><strong>Liveness (all transitions fire at least once):</strong> {{ result.analysis.is_liveness|yesno:"Yes,No" }}</li>
+                    <li><strong>Parallel Firing Possible:</strong> {{ result.analysis.has_parallel_firing|yesno:"Yes,No" }}</li>
+                    {% if result.network.target_marking is not None %}
+                        <li><strong>Target Marking Reachable:</strong> {{ result.analysis.reachable|yesno:"Yes,No" }}</li>
+                    {% endif %}
+                </ul>
+
+                <h3>Network Classification</h3>
+                <ul>
+                    <li><strong>Automaton Net:</strong> {{ result.classification.automaton|yesno:"Yes,No" }}</li>
+                    <li><strong>Marked Graph:</strong> {{ result.classification.marked_graph|yesno:"Yes,No" }}</li>
+                    <li><strong>Free-Choice Net:</strong> {{ result.classification.free_choice|yesno:"Yes,No" }}</li>
+                </ul>
+
+                <h3>Reachability Graph (SVG)</h3>
+                {% if result.svg_diagram %}
+                    <div style="border: 1px solid var(--border); padding: 12px; overflow: auto; max-width: 100%;">
+                        {{ result.svg_diagram|safe }}
+                    </div>
+                {% else %}
+                    <p class="text-muted">SVG diagram could not be rendered.</p>
+                {% endif %}
+
+                <h3>All Reachable Markings</h3>
+                <p>Each row corresponds to a marking [p1, p2, ..., pn]. Symbol "∞" denotes unbounded growth (ω).</p>
+                <table>
+                    <thead>
+                        <tr>
+                            <th>Marking</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for marking in result.all_markings %}
+                            <tr>
+                                <td>[{{ marking|join:", " }}]</td>
+                            </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        {% endif %}
+    {% endif %}
+{% endblock %}
