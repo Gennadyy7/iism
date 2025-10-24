@@ -1,6 +1,6 @@
 import heapq
 import random
-from typing import NamedTuple, Any
+from typing import Any, NamedTuple
 
 
 class Event(NamedTuple):
