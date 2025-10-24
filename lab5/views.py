@@ -14,13 +14,51 @@ class Lab5View(TemplateView):
 
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
-        context['form'] = PetriNetForm()
+        form = PetriNetForm()
+
+        num_transitions = form.fields['num_transitions'].initial or 4
+
+        transition_fields = []
+        for i in range(1, num_transitions + 1):
+            try:
+                input_field = form[f"transition_{i}_input"]
+                output_field = form[f"transition_{i}_output"]
+                transition_fields.append({
+                    'index': i,
+                    'input': input_field,
+                    'output': output_field,
+                })
+            except KeyError:
+                break
+
+        context['form'] = form
+        context['transition_fields'] = transition_fields
         return context
 
     @handle_lab_exceptions
     def post(self, request):
-        context = self.get_context_data()
-        form = PetriNetForm(request.POST)
+        num_transitions_raw = request.POST.get('num_transitions', 4)
+        try:
+            num_transitions = int(num_transitions_raw)
+            if not (1 <= num_transitions <= 20):
+                num_transitions = 4
+        except (TypeError, ValueError):
+            num_transitions = 4
+
+        form = PetriNetForm(request.POST, initial={'num_transitions': num_transitions})
+
+        transition_fields = []
+        for i in range(1, num_transitions + 1):
+            try:
+                input_field = form[f"transition_{i}_input"]
+                output_field = form[f"transition_{i}_output"]
+                transition_fields.append({
+                    'index': i,
+                    'input': input_field,
+                    'output': output_field,
+                })
+            except KeyError:
+                break
 
         if form.is_valid():
             try:
@@ -61,39 +99,45 @@ class Lab5View(TemplateView):
 
                 classification = analyzer.classify()
 
-                context['result'] = {
-                    'network': {
-                        'places': list(places),
-                        'transitions': list(transitions),
-                        'input_arcs': input_arcs,
-                        'output_arcs': output_arcs,
-                        'initial_marking': initial_marking_list,
-                        'target_marking': target_marking_list,
+                context = {
+                    'form': form,
+                    'transition_fields': transition_fields,
+                    'result': {
+                        'network': {
+                            'places': list(places),
+                            'transitions': list(transitions),
+                            'input_arcs': input_arcs,
+                            'output_arcs': output_arcs,
+                            'initial_marking': initial_marking_list,
+                            'target_marking': target_marking_list,
+                        },
+                        'analysis': {
+                            'is_bounded': analyzer.is_bounded(),
+                            'is_safe': analyzer.is_safe(),
+                            'is_conservative': analyzer.is_conservative(),
+                            'is_liveness': analyzer.is_liveness(),
+                            'has_parallel_firing': analyzer.has_parallel_firing(),
+                            'reachable': target_reachable,
+                        },
+                        'classification': {
+                            'automaton': classification['automaton'],
+                            'marked_graph': classification['marked_graph'],
+                            'free_choice': classification['free_choice'],
+                        },
+                        'svg_diagram': svg_diagram,
+                        'all_markings': [
+                            [v if v != "ω" else "∞" for v in m.values]
+                            for m in analyzer.all_markings
+                        ],
                     },
-                    'analysis': {
-                        'is_bounded': analyzer.is_bounded(),
-                        'is_safe': analyzer.is_safe(),
-                        'is_conservative': analyzer.is_conservative(),
-                        'is_liveness': analyzer.is_liveness(),
-                        'has_parallel_firing': analyzer.has_parallel_firing(),
-                        'reachable': target_reachable,
-                    },
-                    'classification': {
-                        'automaton': classification['automaton'],
-                        'marked_graph': classification['marked_graph'],
-                        'free_choice': classification['free_choice'],
-                    },
-                    'svg_diagram': svg_diagram,
-                    'all_markings': [
-                        [v if v != "ω" else "∞" for v in m.values]
-                        for m in analyzer.all_markings
-                    ],
                 }
+                return render(request, self.template_name, context)
 
             except Exception as e:
                 form.add_error(None, f"Error during Petri net analysis: {e}")
-                context['form'] = form
-        else:
-            context['form'] = form
 
+        context = {
+            'form': form,
+            'transition_fields': transition_fields,
+        }
         return render(request, self.template_name, context)

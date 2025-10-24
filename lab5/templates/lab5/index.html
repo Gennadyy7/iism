@@ -1,7 +1,6 @@
 {% extends 'layout.html' %}
 
 {% load static %}
-{% load lab5_extras %}
 
 {% block title %}Lab 5{% endblock %}
 
@@ -62,30 +61,28 @@
                     {% endfor %}
                 </div>
 
-                {% for i in form.num_transitions.field.initial|default:4|make_list %}
-                    {% with transition_index=forloop.counter %}
-                        <h3>Transition t{{ transition_index }}</h3>
-                        <div class="lab-form-group">
-                            {{ form|get_field_by_name:"transition_"|add:transition_index|add:"_input"|safe.label_tag }}
-                            {{ form|get_field_by_name:"transition_"|add:transition_index|add:"_input"|safe }}
-                            {% if form|get_field_by_name:"transition_"|add:transition_index|add:"_input"|safe.field.help_text %}
-                                <span class="help-text">{{ form|get_field_by_name:"transition_"|add:transition_index|add:"_input"|safe.field.help_text }}</span>
-                            {% endif %}
-                            {% for error in form|get_field_by_name:"transition_"|add:transition_index|add:"_input"|safe.errors %}
-                                <div class="text-muted">{{ error }}</div>
-                            {% endfor %}
-                        </div>
-                        <div class="lab-form-group">
-                            {{ form|get_field_by_name:"transition_"|add:transition_index|add:"_output"|safe.label_tag }}
-                            {{ form|get_field_by_name:"transition_"|add:transition_index|add:"_output"|safe }}
-                            {% if form|get_field_by_name:"transition_"|add:transition_index|add:"_output"|safe.field.help_text %}
-                                <span class="help-text">{{ form|get_field_by_name:"transition_"|add:transition_index|add:"_output"|safe.field.help_text }}</span>
-                            {% endif %}
-                            {% for error in form|get_field_by_name:"transition_"|add:transition_index|add:"_output"|safe.errors %}
-                                <div class="text-muted">{{ error }}</div>
-                            {% endfor %}
-                        </div>
-                    {% endwith %}
+                {% for tf in transition_fields %}
+                    <h3>Transition t{{ tf.index }}</h3>
+                    <div class="lab-form-group">
+                        {{ tf.input.label_tag }}
+                        {{ tf.input }}
+                        {% if tf.input.field.help_text %}
+                            <span class="help-text">{{ tf.input.field.help_text }}</span>
+                        {% endif %}
+                        {% for error in tf.input.errors %}
+                            <div class="text-muted">{{ error }}</div>
+                        {% endfor %}
+                    </div>
+                    <div class="lab-form-group">
+                        {{ tf.output.label_tag }}
+                        {{ tf.output }}
+                        {% if tf.output.field.help_text %}
+                            <span class="help-text">{{ tf.output.field.help_text }}</span>
+                        {% endif %}
+                        {% for error in tf.output.errors %}
+                            <div class="text-muted">{{ error }}</div>
+                        {% endfor %}
+                    </div>
                 {% endfor %}
 
                 {% if form.non_field_errors %}
