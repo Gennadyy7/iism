@@ -47,10 +47,21 @@ class ReachabilityGraphBuilder:
     def _mark_unbounded_due_to_limit(self) -> None:
         initial_vals = self.net.initial_marking.values
         last_mark = next(reversed(self.graph))
+        all_values_per_place = [[] for _ in initial_vals]
+        for marking in self.graph:
+            for i, val in enumerate(marking.values):
+                if isinstance(val, int):
+                    all_values_per_place[i].append(val)
         new_vals = []
-        for init_v, last_v in zip(initial_vals, last_mark.values):
-            if isinstance(last_v, int) and isinstance(init_v, int) and last_v > init_v:
-                new_vals.append("ω")
+        for i, (init_v, last_v) in enumerate(zip(initial_vals, last_mark.values)):
+            if isinstance(last_v, int):
+                if last_v > init_v and last_v > 1:
+                    if all_values_per_place[i] and last_v == max(all_values_per_place[i]):
+                        new_vals.append("ω")
+                    else:
+                        new_vals.append(last_v)
+                else:
+                    new_vals.append(last_v)
             else:
                 new_vals.append(last_v)
         unbounded_mark = Marking(tuple(new_vals), last_mark.place_order)
