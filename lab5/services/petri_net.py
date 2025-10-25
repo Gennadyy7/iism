@@ -27,7 +27,16 @@ class PetriNet:
         mark_dict = marking.to_dict()
         for t in self.transitions:
             inputs = self.input_arcs.get(t, [])
-            if all(mark_dict.get(p, 0) >= 1 for p in inputs):
+            satisfied = True
+            for p in inputs:
+                v = mark_dict.get(p, 0)
+                if isinstance(v, int):
+                    if v < 1:
+                        satisfied = False
+                        break
+                elif v == "ω":
+                    continue
+            if satisfied:
                 enabled.add(t)
         return enabled
 
