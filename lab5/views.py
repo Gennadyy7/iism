@@ -4,6 +4,7 @@ from django.views.generic import TemplateView
 from iism.utils import handle_lab_exceptions
 from lab5.forms import PetriNetForm
 from lab5.services.analyzer import PetriNetAnalyzer
+from lab5.services.graph_builder import ReachabilityGraphBuilder
 from lab5.services.marking import Marking
 from lab5.services.petri_net import PetriNet
 from lab5.services.renderer import SVGGraphRenderer
@@ -101,7 +102,10 @@ class Lab5View(TemplateView):
                 classification = analyzer.classify()
 
                 simulator = PetriNetSimulator()
-                simulation_path, is_cyclic = simulator.simulate_one_path(petri_net, max_steps=15)
+                simulation_path, is_cyclic = simulator.simulate_one_path(
+                    petri_net,
+                    max_steps=ReachabilityGraphBuilder.MAX_MARKINGS,
+                )
                 slide_svgs = []
                 for mark in simulation_path:
                     try:
