@@ -169,6 +169,22 @@
                         {% endfor %}
                     </tbody>
                 </table>
+
+                <h3>Simulation: Step-by-Step Execution</h3>
+                {% if result.is_cyclic_simulation %}
+                    <p><strong>🔄 Циклическая система:</strong> последний шаг ведёт к повторению.</p>
+                {% else %}
+                    <p>Система завершается в тупиковом состоянии или достигает лимита шагов.</p>
+                {% endif %}
+
+                <div style="display: flex; flex-direction: column; gap: 24px; margin: 20px 0;">
+                    {% for slide in result.simulation_slides %}
+                        <div style="border: 1px solid var(--border); padding: 16px; overflow: auto;">
+                            <h4>Step {{ forloop.counter }} / {{ result.total_simulation_steps }}</h4>
+                            {{ slide|safe }}
+                        </div>
+                    {% endfor %}
+                </div>
             </div>
         {% endif %}
     {% endif %}

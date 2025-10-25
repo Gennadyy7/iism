@@ -7,6 +7,7 @@ from lab5.services.analyzer import PetriNetAnalyzer
 from lab5.services.marking import Marking
 from lab5.services.petri_net import PetriNet
 from lab5.services.renderer import SVGGraphRenderer
+from lab5.services.simulator import PetriNetSimulator
 
 
 class Lab5View(TemplateView):
@@ -99,6 +100,16 @@ class Lab5View(TemplateView):
 
                 classification = analyzer.classify()
 
+                simulator = PetriNetSimulator()
+                simulation_path, is_cyclic = simulator.simulate_one_path(petri_net, max_steps=15)
+                slide_svgs = []
+                for mark in simulation_path:
+                    try:
+                        svg = SVGGraphRenderer.render_petri_net_with_marking(petri_net, mark)
+                        slide_svgs.append(svg)
+                    except Exception as e:
+                        slide_svgs.append(f"<!-- Slide rendering failed: {e} -->")
+
                 context = {
                     'form': form,
                     'transition_fields': transition_fields,
@@ -129,6 +140,9 @@ class Lab5View(TemplateView):
                             [v if v != "ω" else "∞" for v in m.values]
                             for m in analyzer.all_markings
                         ],
+                        'simulation_slides': slide_svgs,
+                        'is_cyclic_simulation': is_cyclic,
+                        'total_simulation_steps': len(slide_svgs),
                     },
                 }
                 return render(request, self.template_name, context)
