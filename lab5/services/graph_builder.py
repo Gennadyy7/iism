@@ -1,12 +1,14 @@
 from collections import deque
 
+from django.conf import settings
+
 from lab5.services.marking import Marking
 from lab5.services.petri_net import PetriNet
 from lab5.services.types import TransitionName
 
 
 class ReachabilityGraphBuilder:
-    MAX_MARKINGS = 10
+    MAX_MARKINGS = settings.MAX_MARKINGS
 
     def __init__(self, petri_net: PetriNet):
         self.net = petri_net
